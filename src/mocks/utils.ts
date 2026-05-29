@@ -2,8 +2,12 @@ export type MockRole = 'OWNER' | 'REVIEWER' | null;
 
 export function getRole(request: Request): MockRole {
   const auth = request.headers.get('Authorization');
-  if (auth === 'Bearer mock-owner-token') return 'OWNER';
-  if (auth === 'Bearer mock-reviewer-token') return 'REVIEWER';
+  if (auth === 'Bearer mock-owner-token') {
+    return 'OWNER';
+  }
+  if (auth === 'Bearer mock-reviewer-token') {
+    return 'REVIEWER';
+  }
   return null;
 }
 
