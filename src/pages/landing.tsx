@@ -1,3 +1,13 @@
+import { useRouteNavigation } from '../routes/use-route-navigation';
+
 export const LandingPage = () => {
-  return <div>랜딩 페이지입니다.</div>;
+  const { toSignIn, toSignUp } = useRouteNavigation();
+
+  return (
+    <div>
+      <p>랜딩 페이지입니다.</p>
+      <button onClick={toSignIn}>로그인</button>
+      <button onClick={toSignUp}>회원가입</button>
+    </div>
+  );
 };
