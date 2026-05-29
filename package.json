@@ -13,8 +13,10 @@
     "check-all": "pnpm check:types && pnpm check:format"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
