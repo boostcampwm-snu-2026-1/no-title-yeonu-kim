@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["dist", ".yarn", "node_modules"]
+    "includes": ["**", "!dist", "!node_modules"]
   },
   "formatter": {
     "enabled": true,
@@ -18,9 +18,17 @@
     "lineEnding": "lf",
     "lineWidth": 80,
     "attributePosition": "auto",
-    "bracketSpacing": true
+    "bracketSpacing": true,
+    "trailingNewline": true
   },
-  "organizeImports": { "enabled": true },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -45,21 +53,43 @@
         "noUnsafeOptionalChaining": "error",
         "noUnusedLabels": "error",
         "noUnusedPrivateClassMembers": "error",
-        "noUnusedVariables": "error",
+        "noUnusedVariables": {
+          "level": "error",
+          "fix": "none"
+        },
+        "noUnusedImports": "error",
         "useIsNan": "error",
         "useValidForDirection": "error",
-        "useYield": "error",
-        "useExhaustiveDependencies": "error",
-        "useHookAtTopLevel": "error"
+        "useYield": "error"
       },
       "complexity": {
         "noExtraBooleanCast": "error",
-        "noMultipleSpacesInRegularExpressionLiterals": "error",
         "noUselessCatch": "error",
-        "noWith": "off",
-        "noUselessTypeConstraint": "error"
+        "noUselessTypeConstraint": "error",
+        "useArrowFunction": "error"
       },
       "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": [
+              "assert",
+              "error",
+              "info",
+              "warn",
+              "debug",
+              "trace",
+              "dir",
+              "table",
+              "group",
+              "groupEnd",
+              "time",
+              "timeEnd",
+              "count",
+              "countReset"
+            ]
+          }
+        },
         "noAsyncPromiseExecutor": "error",
         "noCatchAssign": "error",
         "noClassAssign": "off",
@@ -88,23 +118,37 @@
         "useAwait": "error",
         "useGetterReturn": "off",
         "useNamespaceKeyword": "error",
-        "useValidTypeof": "error",
-        "noConsole": {
-          "options": {
-            "allow": ["warn", "error", "info"]
-          },
-          "level": "error"
-        }
+        "noImplicitAnyLet": "error"
       },
       "style": {
-        "noArguments": "error",
         "noNamespace": "error",
-        "noVar": "error",
         "useAsConstAssertion": "error",
-        "useConst": "error"
+        "useConst": "error",
+        "noParameterAssign": "error",
+        "useBlockStatements": "error",
+        "noDefaultExport": "error"
+      },
+      "nursery": {
+        "useSortedClasses": "error"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
     },
-    "ignore": ["dist", ".yarn", "node_modules"]
+    "linter": {
+      "enabled": true
+    },
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineEnding": "lf",
+      "lineWidth": 80,
+      "quoteStyle": "double"
+    }
   },
   "javascript": {
     "formatter": {
@@ -117,133 +161,30 @@
       "quoteStyle": "single",
       "attributePosition": "auto",
       "bracketSpacing": true
-    },
-    "globals": [
-      "onscrollend",
-      "onpointerleave",
-      "oncontextrestored",
-      "onemptied",
-      "ongamepaddisconnected",
-      "onkeypress",
-      "onloadeddata",
-      "onmouseup",
-      "onvolumechange",
-      "onpaste",
-      "onstorage",
-      "onkeyup",
-      "onabort",
-      "oncut",
-      "ontransitionrun",
-      "onafterprint",
-      "onblur",
-      "ondurationchange",
-      "ontransitionstart",
-      "oncanplaythrough",
-      "onanimationend",
-      "onmouseleave",
-      "ondragleave",
-      "onplay",
-      "onunhandledrejection",
-      "onbeforeprint",
-      "oncommand",
-      "onpointercancel",
-      "onsubmit",
-      "ondragstart",
-      "onmessage",
-      "location",
-      "onoffline",
-      "onappinstalled",
-      "onwheel",
-      "onended",
-      "onkeydown",
-      "onclick",
-      "onfocus",
-      "onscroll",
-      "ongamepadconnected",
-      "oncanplay",
-      "onpointerdown",
-      "ondeviceorientationabsolute",
-      "onauxclick",
-      "ondevicemotion",
-      "onratechange",
-      "ontransitionend",
-      "onscrollsnapchanging",
-      "onchange",
-      "onselect",
-      "onbeforeinstallprompt",
-      "onbeforetoggle",
-      "onmouseout",
-      "ontimeupdate",
-      "ondragover",
-      "oncuechange",
-      "ontransitioncancel",
-      "onprogress",
-      "onbeforeinput",
-      "onpointerenter",
-      "onmouseenter",
-      "oninvalid",
-      "onpointerout",
-      "onpagereveal",
-      "onpause",
-      "onanimationstart",
-      "onwaiting",
-      "onscrollsnapchange",
-      "ondeviceorientation",
-      "onclose",
-      "onbeforeunload",
-      "oncancel",
-      "onseeked",
-      "onpointerover",
-      "ongotpointercapture",
-      "onloadedmetadata",
-      "onpageshow",
-      "onstalled",
-      "oncontextmenu",
-      "onreset",
-      "ondrag",
-      "onbeforematch",
-      "onload",
-      "onlostpointercapture",
-      "onsuspend",
-      "onselectionchange",
-      "onpagehide",
-      "onrejectionhandled",
-      "onunload",
-      "onanimationcancel",
-      "onmousedown",
-      "onpointerup",
-      "onmouseover",
-      "onformdata",
-      "oncontentvisibilityautostatechange",
-      "onresize",
-      "onsearch",
-      "ontoggle",
-      "onpageswap",
-      "onbeforexrselect",
-      "onlanguagechange",
-      "ondragenter",
-      "onerror",
-      "onpointermove",
-      "onmousemove",
-      "ondrop",
-      "onhashchange",
-      "onsecuritypolicyviolation",
-      "onslotchange",
-      "oncopy",
-      "onanimationiteration",
-      "ondblclick",
-      "ondragend",
-      "onpointerrawupdate",
-      "onpopstate",
-      "onplaying",
-      "oncontextlost",
-      "onloadstart",
-      "onseeking",
-      "oninput",
-      "onmessageerror",
-      "onselectstart",
-      "onmousewheel",
-      "ononline"
-    ]
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["vite.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ],
+  "html": {
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineEnding": "lf",
+      "lineWidth": 80,
+      "attributePosition": "auto",
+      "bracketSameLine": false,
+      "whitespaceSensitivity": "css"
+    }
   }
 }
