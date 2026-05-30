@@ -1,9 +1,10 @@
-import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useSignIn } from '@/feature/auth/application/auth-query';
+import type { UserRole } from '@/feature/auth/domain/user-role';
 import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
 import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
+import { PasswordInput } from '@/widgets/auth/ui/password-input';
 import { Button } from '@/widgets/common/ui/button';
 import {
   Card,
@@ -15,11 +16,8 @@ import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 
-type Role = 'OWNER' | 'REVIEWER';
-
 export function SignInForm() {
-  const [role, setRole] = useState<Role>('REVIEWER');
-  const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<UserRole>('REVIEWER');
   const [submitted, setSubmitted] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
 
@@ -50,7 +48,7 @@ export function SignInForm() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-5">
-          <Tabs value={role} onValueChange={(v) => setRole(v as Role)}>
+          <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)}>
             <TabsList className="w-full">
               <TabsTrigger value="REVIEWER" className="flex-1">
                 손님
@@ -84,32 +82,14 @@ export function SignInForm() {
             {/* 비밀번호 */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="signin-password">비밀번호</Label>
-              <div className="relative">
-                <Input
-                  id="signin-password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="비밀번호를 입력하세요"
-                  value={password.value}
-                  onChange={(e) => password.onChange(e.target.value)}
-                  aria-invalid={submitted && password.isError}
-                  autoComplete="current-password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={
-                    showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-              </div>
+              <PasswordInput
+                id="signin-password"
+                placeholder="비밀번호를 입력하세요"
+                value={password.value}
+                onChange={password.onChange}
+                aria-invalid={submitted && password.isError}
+                autoComplete="current-password"
+              />
               {submitted && password.isError && (
                 <p className="text-destructive text-xs">
                   비밀번호를 입력해 주세요.

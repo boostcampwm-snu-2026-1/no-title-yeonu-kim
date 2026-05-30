@@ -5,6 +5,58 @@ import { createErrorMessage } from '@/feature/shared/error/create-error-message'
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import type { UserRole } from '../domain/user-role';
 
+export const useSendVerificationEmail = ({
+  onSuccess,
+  setResponseMessage,
+}: {
+  onSuccess: () => void;
+  setResponseMessage: (message: string) => void;
+}) => {
+  const { authUsecase } = useGuardContext(UsecaseContext);
+  const { mutate: sendVerificationEmail, isPending } = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      return await authUsecase.sendVerificationEmail({ email });
+    },
+    onSuccess: (response) => {
+      if (response.type === 'success') {
+        onSuccess();
+        return;
+      }
+      setResponseMessage(
+        createErrorMessage(response.code, '인증 이메일 발송에 실패했습니다.')
+      );
+    },
+  });
+
+  return { sendVerificationEmail, isPending };
+};
+
+export const useValidateEmailCode = ({
+  onSuccess,
+  setCodeError,
+}: {
+  onSuccess: (verificationToken: string) => void;
+  setCodeError: (message: string) => void;
+}) => {
+  const { authUsecase } = useGuardContext(UsecaseContext);
+  const { mutate: validateEmailCode, isPending } = useMutation({
+    mutationFn: async ({ email, code }: { email: string; code: string }) => {
+      return await authUsecase.validateEmailCode({ email, code });
+    },
+    onSuccess: (response) => {
+      if (response.type === 'success') {
+        onSuccess(response.data.verificationToken);
+        return;
+      }
+      setCodeError(
+        createErrorMessage(response.code, '인증 코드 확인에 실패했습니다.')
+      );
+    },
+  });
+
+  return { validateEmailCode, isPending };
+};
+
 export const useSignIn = ({
   setResponseMessage,
 }: {
@@ -43,8 +95,10 @@ export const useSignIn = ({
 
 export const useSignUp = ({
   setResponseMessage,
+  onDuplicateEmail,
 }: {
   setResponseMessage: (message: string) => void;
+  onDuplicateEmail: () => void;
 }) => {
   const { authUsecase } = useGuardContext(UsecaseContext);
   const { toMain } = useRouteNavigation();
@@ -60,16 +114,19 @@ export const useSignUp = ({
       email: string;
       password: string;
     }) => {
-      return await authUsecase.signUp({
-        role,
-        username,
-        email,
-        password,
-      });
+      const checkResult = await authUsecase.checkEmailDuplicate({ email });
+      if (checkResult.type === 'error') {
+        return checkResult;
+      }
+      return await authUsecase.signUp({ role, username, email, password });
     },
     onSuccess: (response) => {
       if (response.type === 'success') {
         toMain();
+        return;
+      }
+      if (response.code === 'USER_001') {
+        onDuplicateEmail();
         return;
       }
       setResponseMessage(
