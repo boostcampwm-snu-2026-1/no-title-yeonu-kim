@@ -11,6 +11,7 @@ export type SignUpRequest = {
 };
 
 export type SignInRequest = {
+  role: 'OWNER' | 'REVIEWER';
   mail: string;
   password: string;
 };

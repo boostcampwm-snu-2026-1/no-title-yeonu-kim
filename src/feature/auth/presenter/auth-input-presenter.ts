@@ -9,7 +9,7 @@ type InitialInputState = {
   code?: string;
 };
 
-export type AuthInputPresentation = {
+export type AuthInputPresenter = {
   useValidator({ initialState }: { initialState?: InitialInputState }): {
     mail: Input<string>;
     username: Input<string>;
@@ -53,7 +53,7 @@ const PASSWORD_DETAIL_REGEX = {
 const CODE_REGEX = /^\d{6}$/;
 const USERNAME_REGEX = /^([가-힣]{2,6}|[A-Za-z]{2,20})$/;
 
-export const authInputPresentation: AuthInputPresentation = {
+export const authInputPresenter: AuthInputPresenter = {
   useValidator: ({ initialState = {} }) => {
     const [mail, setMail] = useState(
       initialState.mail !== undefined ? initialState.mail : ''

@@ -3,7 +3,7 @@ import { PATH } from './path';
 
 export const useRouteNavigation = () => {
   const navigate = useNavigate();
-  const { LANDING, SIGN_IN, SIGN_UP } = PATH;
+  const { LANDING, SIGN_IN, SIGN_UP, SIGN_UP_COMPLETE } = PATH;
 
   return {
     toMain: () => {
@@ -14,6 +14,9 @@ export const useRouteNavigation = () => {
     },
     toSignUp: () => {
       void navigate(SIGN_UP);
+    },
+    toSignUpComplete: () => {
+      void navigate(SIGN_UP_COMPLETE);
     },
     toBack: () => {
       void navigate(-1);

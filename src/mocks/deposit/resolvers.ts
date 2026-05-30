@@ -49,7 +49,7 @@ export const depositResolver: DepositResolver = {
         balance: mockDeposit.balance + body.amount,
         depositedAt: new Date().toISOString(),
       },
-      { status: 201 }
+      { status: 200 }
     );
   },
 };

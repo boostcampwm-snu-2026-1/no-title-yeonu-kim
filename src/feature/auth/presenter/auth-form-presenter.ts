@@ -3,7 +3,7 @@ import type {
   InputForForm,
   InputWithDetailedError,
 } from '@/entities/input';
-import type { AuthInputPresentation } from '@/feature/auth/presenter/authInputPresentation';
+import type { AuthInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
 
 type InitialFormState = {
   email?: string;
@@ -13,13 +13,13 @@ type InitialFormState = {
   code?: string;
 };
 
-type AuthFormPresentation = {
+type AuthFormPresenter = {
   useValidator({
     initialState,
-    authInputPresentation,
+    authInputPresenter,
   }: {
     initialState?: InitialFormState;
-    authInputPresentation: AuthInputPresentation;
+    authInputPresenter: AuthInputPresenter;
   }): {
     inputStates: {
       mail: Input<string>;
@@ -60,8 +60,8 @@ type AuthFormPresentation = {
   };
 };
 
-export const authFormPresentation: AuthFormPresentation = {
-  useValidator: ({ initialState, authInputPresentation }) => {
+export const authFormPresenter: AuthFormPresenter = {
+  useValidator: ({ initialState, authInputPresenter }) => {
     const initialStateForInput = {
       mail: initialState?.mail,
       username: initialState?.username,
@@ -78,7 +78,7 @@ export const authFormPresentation: AuthFormPresentation = {
       newPasswordConfirm,
       code,
       emailVerifySuccessCode,
-    } = authInputPresentation.useValidator({
+    } = authInputPresenter.useValidator({
       initialState: initialStateForInput,
     });
 

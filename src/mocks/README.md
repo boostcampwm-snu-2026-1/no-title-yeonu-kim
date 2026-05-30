@@ -16,7 +16,7 @@
 
 | 케이스 | 조건 |
 |---|---|
-| `201` 성공 | 정상 body |
+| `200` 성공 | 정상 body |
 | `400` 필드 누락 | `role`, `username`, `email`, `password` 중 하나 누락 |
 | `409` 중복 이메일 | `email: "duplicate@example.com"` |
 | `400` 인증코드 만료 (리뷰어) | `role: "REVIEWER"` + `email`에 `+fail` 포함 (예: `test+fail@snu.ac.kr`) |
@@ -41,7 +41,7 @@
 
 | 엔드포인트 | 케이스 | 조건 |
 |---|---|---|
-| `POST /api/store` | `201` | owner 토큰 |
+| `POST /api/store` | `200` | owner 토큰 |
 |  | `401` | 토큰 없음 |
 |  | `403` | reviewer 토큰 |
 | `GET /api/store` | `200` | 항상 (`?category=CAFE` 등 필터 가능) |
@@ -58,7 +58,7 @@
 
 | 엔드포인트 | 케이스 | 조건 |
 |---|---|---|
-| `POST /api/event` | `201` | owner 토큰, 정상 body |
+| `POST /api/event` | `200` | owner 토큰, 정상 body |
 |  | `400` 예치금 부족 | `reward >= 999999999` |
 | `GET /api/event/owner` | `200` | owner 토큰 |
 | `PATCH /api/event/:eventId` | `200` | `eventId: "event-001" ~ "event-003"`, owner 토큰 |
@@ -97,7 +97,7 @@
 |---|---|---|
 | `GET /api/deposit` | `200` | owner 토큰 |
 |  | `404` 예치금 없음 | `Authorization: Bearer mock-no-deposit-owner-token` |
-| `POST /api/deposit` | `201` | owner 토큰, `amount > 0` |
+| `POST /api/deposit` | `200` | owner 토큰, `amount > 0` |
 |  | `400` | `amount <= 0` 또는 누락 |
 
 ---

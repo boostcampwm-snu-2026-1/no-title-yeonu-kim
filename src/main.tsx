@@ -8,10 +8,19 @@ if (rootElement === null) {
   throw new Error('Root element not found');
 }
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>
-);
+async function enableMocking() {
+  if (import.meta.env.DEV) {
+    const { worker } = await import('./mocks');
+    return worker.start({ onUnhandledRequest: 'bypass' });
+  }
+}
+
+enableMocking().then(() => {
+  createRoot(rootElement!).render(
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>
+  );
+});

@@ -4,7 +4,11 @@ import type {
   ResponseNecessary,
   SuccessResponse,
 } from '../../domain';
-import type { TestRequest, TestResponse } from './schemas';
+import type {
+  SignInRequest,
+  SignUpRequest,
+  UserWithAccessTokenResponse,
+} from './schemas';
 
 type GetApisProps = {
   callWithToken: <R extends ResponseNecessary>(
@@ -27,10 +31,16 @@ type Api = (_: {
 
 export const getLocalServerApis = ({ callWithoutToken }: GetApisProps) =>
   ({
-    'GET /test': ({ body }: { body: TestRequest }) =>
-      callWithoutToken<SuccessResponse<TestResponse>>({
-        method: 'GET',
-        path: 'test',
+    'POST /api/auth/user': ({ body }: { body: SignUpRequest }) =>
+      callWithoutToken<SuccessResponse<UserWithAccessTokenResponse>>({
+        method: 'POST',
+        path: 'api/auth/user',
+        body,
+      }),
+    'POST /api/auth/user/session': ({ body }: { body: SignInRequest }) =>
+      callWithoutToken<SuccessResponse<UserWithAccessTokenResponse>>({
+        method: 'POST',
+        path: 'api/auth/user/session',
         body,
       }),
   }) satisfies Record<string, Api>;
