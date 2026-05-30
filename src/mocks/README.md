@@ -10,6 +10,81 @@
 
 ---
 
+# 메일 중복 확인
+
+## POST `/api/auth/email`
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 (중복 없음) | 정상 body |
+| `400` 필드 누락 | `email` 누락 |
+| `409` 중복 이메일 | `email: "duplicate@example.com"` |
+
+---
+
+# 메일 인증 이메일 발송
+
+## POST `/api/auth/email/verify`
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 | 정상 body |
+| `400` 필드 누락 | `email` 누락 |
+| `500` 발송 실패 | `email: "fail-send@example.com"` |
+
+---
+
+# 메일 인증 코드 확인
+
+## POST `/api/auth/email/validate`
+
+성공 시 `{ verificationToken: "mock-verification-token-uuid" }` 반환.
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 | 정상 body |
+| `400` 필드 누락 | `email` 또는 `code` 누락 |
+| `400` 잘못된 코드 | `code: "000000"` |
+
+---
+
+# 로그아웃
+
+## DELETE `/api/auth/user/session`
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 | owner 또는 reviewer 토큰 |
+| `401` 인증 실패 | 토큰 없음 또는 유효하지 않은 토큰 |
+
+---
+
+# 비밀번호 재설정
+
+## POST `/api/auth/password`
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 | 정상 body |
+| `400` 필드 누락 | `email` 누락 |
+| `404` 사용자 없음 | `email: "notfound@example.com"` |
+| `500` 발송 실패 | `email: "fail-send@example.com"` |
+
+---
+
+# 비밀번호 변경
+
+## PATCH `/api/auth/password`
+
+| 케이스 | 조건 |
+|---|---|
+| `200` 성공 | 로그인 토큰 + 정상 body |
+| `400` 필드 누락 | `currentPassword` 또는 `newPassword` 누락 |
+| `401` 인증 실패 | 토큰 없음 또는 유효하지 않은 토큰 |
+| `401` 기존 비밀번호 불일치 | `currentPassword: "wrongpassword"` |
+
+---
+
 # 회원가입
 
 ## POST `/api/auth/user`
