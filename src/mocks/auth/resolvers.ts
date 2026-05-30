@@ -43,13 +43,13 @@ export const authResolver: AuthResolver = {
     }
 
     const response = body.role === 'OWNER' ? mockOwnerUser : mockReviewerUser;
-    return HttpResponse.json(response, { status: 201 });
+    return HttpResponse.json(response, { status: 200 });
   },
 
   signIn: async ({ request }) => {
     const body = (await request.json()) as SignInRequest;
 
-    if (!body.mail || !body.password) {
+    if (!body.role || !body.mail || !body.password) {
       return HttpResponse.json(
         { message: 'Required field missing' },
         { status: 400 }
@@ -67,10 +67,7 @@ export const authResolver: AuthResolver = {
       );
     }
 
-    // mail에 'owner' 포함 시 사장님 계정 반환, 그 외 리뷰어
-    const response = body.mail.includes('owner')
-      ? mockOwnerUser
-      : mockReviewerUser;
+    const response = body.role === 'OWNER' ? mockOwnerUser : mockReviewerUser;
     return HttpResponse.json(response, { status: 200 });
   },
 };

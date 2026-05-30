@@ -1,8 +1,8 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
-
-import { authFormPresentation } from '@/feature/auth/presenter/authFormPresentation';
-import { authInputPresentation } from '@/feature/auth/presenter/authInputPresentation';
+import { useSignIn } from '@/feature/auth/application/auth-query';
+import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
+import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
 import { useRouteNavigation } from '@/routes/use-route-navigation';
 import { Button } from '@/widgets/common/ui/button';
 import {
@@ -18,29 +18,27 @@ import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 type Role = 'OWNER' | 'REVIEWER';
 
 export function SignInForm() {
-  const { toSignUp } = useRouteNavigation();
   const [role, setRole] = useState<Role>('REVIEWER');
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [serverError, setServerError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
 
-  const { inputStates, formStates } = authFormPresentation.useValidator({
-    authInputPresentation,
+  const { toSignUp } = useRouteNavigation();
+
+  const { inputStates, formStates } = authFormPresenter.useValidator({
+    authInputPresenter,
   });
-
   const { mail, password } = inputStates;
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const { signIn, isPending } = useSignIn({ setResponseMessage });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    setServerError('');
     if (formStates.mail.isError || password.isError) {
       return;
     }
-    setIsLoading(true);
-    // TODO: call signIn usecase
-    setIsLoading(false);
+    signIn({ role, mail: mail.value, password: password.value });
   };
 
   return (
@@ -119,14 +117,14 @@ export function SignInForm() {
               )}
             </div>
 
-            {serverError && (
+            {responseMessage && (
               <p className="text-center text-destructive text-sm">
-                {serverError}
+                {responseMessage}
               </p>
             )}
 
-            <Button className="mt-1 w-full" disabled={isLoading} type="submit">
-              {isLoading ? '로그인 중...' : '로그인'}
+            <Button className="mt-1 w-full" disabled={isPending} type="submit">
+              {isPending ? '로그인 중...' : '로그인'}
             </Button>
           </form>
 

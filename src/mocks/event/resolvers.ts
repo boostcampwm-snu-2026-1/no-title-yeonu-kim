@@ -49,7 +49,7 @@ export const eventResolver: EventResolver = {
         reward: body.reward,
         isActive: true,
       },
-      { status: 201 }
+      { status: 200 }
     );
   },
 

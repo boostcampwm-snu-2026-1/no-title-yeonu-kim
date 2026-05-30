@@ -1,8 +1,9 @@
 import { Check, Eye, EyeOff, X } from 'lucide-react';
 import { useState } from 'react';
-
-import { authFormPresentation } from '@/feature/auth/presenter/authFormPresentation';
-import { authInputPresentation } from '@/feature/auth/presenter/authInputPresentation';
+import { useSignUp } from '@/feature/auth/application/auth-query';
+import type { UserRole } from '@/feature/auth/domain/user-role';
+import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
+import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
 import { useRouteNavigation } from '@/routes/use-route-navigation';
 import { Button } from '@/widgets/common/ui/button';
 import {
@@ -15,22 +16,18 @@ import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 
-type Role = 'OWNER' | 'REVIEWER';
-
 export function SignUpForm() {
   const { toSignIn } = useRouteNavigation();
-  const [role, setRole] = useState<Role>('REVIEWER');
+  const [role, setRole] = useState<UserRole>('REVIEWER');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [serverError, setServerError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
 
-  const { inputStates, formStates } = authFormPresentation.useValidator({
-    authInputPresentation,
+  const { inputStates, formStates } = authFormPresenter.useValidator({
+    authInputPresenter,
   });
-
   const {
     mail,
     username,
@@ -39,8 +36,9 @@ export function SignUpForm() {
     code,
     emailVerifySuccessCode,
   } = inputStates;
-
   const isEmailVerified = !formStates.emailVerifySuccessCode.isError;
+
+  const { signUp, isPending } = useSignUp({ setResponseMessage });
 
   const handleSendCode = () => {
     if (formStates.mail.isError) {
@@ -58,24 +56,23 @@ export function SignUpForm() {
     emailVerifySuccessCode.onChange(code.value);
   };
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitted(true);
-    setServerError('');
-
-    const isValid =
-      !username.isError &&
-      !formStates.mail.isError &&
-      isEmailVerified &&
-      !password.isError &&
-      !passwordConfirm.isError;
-
-    if (!isValid) {
+    if (
+      username.isError ||
+      mail.isError ||
+      password.isError ||
+      passwordConfirm.isError
+    ) {
       return;
     }
-    setIsLoading(true);
-    // TODO: call signUp usecase
-    setIsLoading(false);
+    signUp({
+      role,
+      username: username.value,
+      email: mail.value,
+      password: password.value,
+    });
   };
 
   const { detailedError } = password;
@@ -90,7 +87,7 @@ export function SignUpForm() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-5">
-          <Tabs value={role} onValueChange={(v) => setRole(v as Role)}>
+          <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)}>
             <TabsList className="w-full">
               <TabsTrigger value="REVIEWER" className="flex-1">
                 손님
@@ -301,14 +298,14 @@ export function SignUpForm() {
               )}
             </div>
 
-            {serverError && (
+            {responseMessage && (
               <p className="text-center text-destructive text-sm">
-                {serverError}
+                {responseMessage}
               </p>
             )}
 
-            <Button className="mt-1 w-full" disabled={isLoading} type="submit">
-              {isLoading ? '가입 중...' : '회원가입'}
+            <Button className="mt-1 w-full" disabled={isPending} type="submit">
+              {isPending ? '가입 중입니다...' : '회원가입'}
             </Button>
           </form>
 

@@ -52,7 +52,7 @@ export const storeResolver: StoreResolver = {
         thumbnailKey: body.thumbnailUrl,
         description: body.description,
       },
-      { status: 201 }
+      { status: 200 }
     );
   },
 
