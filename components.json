@@ -15,7 +15,7 @@
   "aliases": {
     "components": "@/widgets/common",
     "utils": "@/lib/utils",
-    "ui": "@/widgets/ui",
+    "ui": "@/widgets/common/ui",
     "lib": "@/lib",
     "hooks": "@/widgets/hooks"
   },
