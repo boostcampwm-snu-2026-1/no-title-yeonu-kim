@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useSignIn } from '@/feature/auth/application/auth-query';
 import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
 import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
-import { useRouteNavigation } from '@/routes/use-route-navigation';
+import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import { Button } from '@/widgets/common/ui/button';
 import {
   Card,

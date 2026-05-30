@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 import { UsecaseContext } from '@/feature/shared/context/usecase-context';
 import { createErrorMessage } from '@/feature/shared/error/create-error-message';
-import { useRouteNavigation } from '@/routes/use-route-navigation';
+import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import type { UserRole } from '../domain/user-role';
 
 export const useSignIn = ({
