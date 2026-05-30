@@ -10,7 +10,9 @@
     "lint": "biome lint .",
     "check:types": "tsc",
     "check:format": "biome check .",
-    "check-all": "pnpm check:types && pnpm check:format"
+    "check-all": "pnpm check:types && pnpm check:format",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",

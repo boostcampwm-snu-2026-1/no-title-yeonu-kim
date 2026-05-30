@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!dist", "!node_modules"]
+    "includes": ["**", "!dist", "!node_modules", "!bookstory-static/**"]
   },
   "formatter": {
     "enabled": true,
@@ -166,6 +166,16 @@
   "overrides": [
     {
       "includes": ["vite.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [".storybook/**", "src/stories/**"],
       "linter": {
         "rules": {
           "style": {
