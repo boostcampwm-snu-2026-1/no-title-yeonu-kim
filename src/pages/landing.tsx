@@ -1,4 +1,4 @@
-import { useRouteNavigation } from '../routes/use-route-navigation';
+import { useRouteNavigation } from '../feature/shared/routes/use-route-navigation';
 
 export const LandingPage = () => {
   const { toSignIn, toSignUp } = useRouteNavigation();

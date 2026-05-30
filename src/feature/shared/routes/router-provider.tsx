@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router';
-import { LandingPage } from '../pages/landing';
-import { SignInPage } from '../pages/sign-in';
-import { SignUpPage } from '../pages/sign-up';
+import { LandingPage } from '../../../pages/landing';
+import { SignInPage } from '../../../pages/sign-in';
+import { SignUpPage } from '../../../pages/sign-up';
 import { PATH } from './path';
 
 export const RouterProvider = () => {

@@ -10,7 +10,9 @@
     "lint": "biome lint .",
     "check:types": "tsc",
     "check:format": "biome check .",
-    "check-all": "pnpm check:types && pnpm check:format"
+    "check-all": "pnpm check:types && pnpm check:format",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",
@@ -31,12 +33,15 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@rolldown/plugin-babel": "^0.2.3",
+    "@storybook/react-vite": "^10.4.1",
     "@types/node": "^25.8.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "msw": "^2.14.6",
+    "msw-storybook-addon": "^2.0.7",
+    "storybook": "^10.4.1",
     "typescript": "~6.0.2",
     "vite": "^8.0.12"
   },

@@ -29,28 +29,16 @@ export const storeResolver: StoreResolver = {
   createStore: async ({ request }) => {
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_001',
-          message: 'Authorization header is missing or malformed',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_007',
-          message: 'You do not have permission to perform this action',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     const body = (await request.json()) as StoreCreateRequest;
     if (!body.name || !body.address || !body.category) {
       return HttpResponse.json(
-        { code: 'GEN_004', message: 'Required fields are missing or invalid' },
+        { message: 'Required field missing' },
         { status: 400 }
       );
     }
@@ -92,30 +80,15 @@ export const storeResolver: StoreResolver = {
     const { storeId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_001',
-          message: 'Authorization header is missing or malformed',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_007',
-          message: 'You do not have permission to perform this action',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     const store = mockStores.find((s) => s.id === storeId);
     if (!store) {
-      return HttpResponse.json(
-        { code: 'STORE_001', message: 'Store not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ message: 'Store not found' }, { status: 404 });
     }
 
     const body = (await request.json()) as StorePatchRequest;
@@ -126,30 +99,15 @@ export const storeResolver: StoreResolver = {
     const { storeId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_001',
-          message: 'Authorization header is missing or malformed',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_007',
-          message: 'You do not have permission to perform this action',
-        },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     const store = mockStores.find((s) => s.id === storeId);
     if (!store) {
-      return HttpResponse.json(
-        { code: 'STORE_001', message: 'Store not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ message: 'Store not found' }, { status: 404 });
     }
 
     return HttpResponse.json(null, { status: 200 });
@@ -159,10 +117,7 @@ export const storeResolver: StoreResolver = {
     const { storeId } = params;
     const store = mockStores.find((s) => s.id === storeId);
     if (!store) {
-      return HttpResponse.json(
-        { code: 'STORE_001', message: 'Store not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ message: 'Store not found' }, { status: 404 });
     }
 
     return HttpResponse.json({ events: store.events });

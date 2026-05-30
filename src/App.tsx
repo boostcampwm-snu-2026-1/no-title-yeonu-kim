@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { implAuthUsecase } from '@/feature/auth/usecase/auth-usecase';
 import { UsecaseContext } from '@/feature/shared/context/usecase-context';
 import { externalCall, implApi } from '@/infrastructure/api';
-import { RouterProvider } from './routes/router-provider';
+import { RouterProvider } from './feature/shared/routes/router-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
