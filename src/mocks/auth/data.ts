@@ -1,4 +1,7 @@
-import type { UserWithAccessTokenResponse, VerificationTokenResponse } from './schemas';
+import type {
+  UserWithAccessTokenResponse,
+  VerificationTokenResponse,
+} from './schemas';
 
 export const mockOwnerUser: UserWithAccessTokenResponse = {
   user: { id: 'owner-001', userRole: 'OWNER' },

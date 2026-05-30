@@ -46,7 +46,11 @@ export const getLocalServerApis = ({ callWithoutToken }: GetApisProps) =>
         path: 'api/auth/email/verify',
         body,
       }),
-    'POST /api/auth/email/validate': ({ body }: { body: EmailValidateRequest }) =>
+    'POST /api/auth/email/validate': ({
+      body,
+    }: {
+      body: EmailValidateRequest;
+    }) =>
       callWithoutToken<SuccessResponse<VerificationTokenResponse>>({
         method: 'POST',
         path: 'api/auth/email/validate',

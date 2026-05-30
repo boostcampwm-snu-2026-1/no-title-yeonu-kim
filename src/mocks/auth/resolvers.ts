@@ -1,6 +1,6 @@
 import { HttpResponse, type HttpResponseResolver } from 'msw';
-import { mockOwnerUser, mockReviewerUser, mockVerificationToken } from './data';
 import { getRole } from '../utils';
+import { mockOwnerUser, mockReviewerUser, mockVerificationToken } from './data';
 import type {
   ChangePasswordRequest,
   EmailRequest,
@@ -75,7 +75,10 @@ export const authResolver: AuthResolver = {
     // 잘못된 인증 코드 시뮬레이션
     if (body.code === '000000') {
       return HttpResponse.json(
-        { code: 'USER_006', message: 'Email verification code is invalid or expired' },
+        {
+          code: 'USER_006',
+          message: 'Email verification code is invalid or expired',
+        },
         { status: 400 }
       );
     }

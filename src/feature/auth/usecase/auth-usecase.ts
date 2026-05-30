@@ -6,7 +6,11 @@ import type { UserWithAccessTokenResponse } from '@/mocks/auth/schemas';
 
 export type AuthUsecase = {
   checkEmailDuplicate: ({ email }: { email: string }) => UsecaseResponse<null>;
-  sendVerificationEmail: ({ email }: { email: string }) => UsecaseResponse<null>;
+  sendVerificationEmail: ({
+    email,
+  }: {
+    email: string;
+  }) => UsecaseResponse<null>;
   validateEmailCode: ({
     email,
     code,

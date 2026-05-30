@@ -12,9 +12,7 @@ async function completeEmailVerification(
   email = VALID_EMAIL
 ) {
   await userEvent.type(canvas.getByLabelText('이메일'), email);
-  await userEvent.click(
-    canvas.getByRole('button', { name: '인증 코드 발송' })
-  );
+  await userEvent.click(canvas.getByRole('button', { name: '인증 코드 발송' }));
   const codeInput = await canvas.findByLabelText('인증 코드');
   await userEvent.type(codeInput, VALID_CODE);
   await userEvent.click(canvas.getByRole('button', { name: '인증 확인' }));

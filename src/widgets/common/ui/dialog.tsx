@@ -20,7 +20,9 @@ export function Dialog({
   onConfirm,
   onCancel,
 }: DialogProps) {
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return createPortal(
     <div
