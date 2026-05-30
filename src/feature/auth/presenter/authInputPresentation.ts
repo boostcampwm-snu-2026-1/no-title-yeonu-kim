@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-import type { Agreement } from '@/entities/agreements';
-import { TERMS } from '@/entities/agreements';
 import type { Input, InputWithDetailedError } from '@/entities/input';
 
 type InitialInputState = {
@@ -39,7 +37,6 @@ export type AuthInputPresentation = {
     newPasswordConfirm: Input<string>;
     code: Input<string>;
     emailVerifySuccessCode: Input<string>;
-    agreements: Input<Agreement[]>;
   };
 };
 
@@ -74,9 +71,6 @@ export const authInputPresentation: AuthInputPresentation = {
       initialState.code !== undefined ? initialState.code : ''
     );
     const [emailVerifySuccessCode, setEmailVerifySuccessCode] = useState('');
-    const [agreements, setAgreements] = useState(
-      TERMS.map((item) => ({ ...item, checked: false }))
-    );
 
     return {
       mail: {
@@ -136,11 +130,6 @@ export const authInputPresentation: AuthInputPresentation = {
         isError: false,
         value: emailVerifySuccessCode,
         onChange: setEmailVerifySuccessCode,
-      },
-      agreements: {
-        isError: false,
-        value: agreements,
-        onChange: setAgreements,
       },
     };
   },
