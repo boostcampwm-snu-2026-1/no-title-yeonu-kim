@@ -12,13 +12,13 @@ export const s3Resolver: S3Resolver = {
   getPresignedUrl: async ({ request }) => {
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
     }
 
     const body = (await request.json()) as S3UploadRequest;
     if (!body.fileName || !body.fileType) {
       return HttpResponse.json(
-        { message: 'Required field missing' },
+        { code: 'GEN_004', message: 'Required fields are missing or invalid' },
         { status: 400 }
       );
     }
