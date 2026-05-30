@@ -13,7 +13,7 @@ export const authResolver: AuthResolver = {
 
     if (!body.role || !body.username || !body.email || !body.password) {
       return HttpResponse.json(
-        { message: 'Required field missing' },
+        { code: 'GEN_004', message: 'Required fields are missing or invalid' },
         { status: 400 }
       );
     }
@@ -21,7 +21,7 @@ export const authResolver: AuthResolver = {
     // 중복 이메일
     if (body.email === 'duplicate@example.com') {
       return HttpResponse.json(
-        { message: 'Email already exists' },
+        { code: 'USER_001', message: 'This email is already registered' },
         { status: 409 }
       );
     }
@@ -29,7 +29,10 @@ export const authResolver: AuthResolver = {
     // 리뷰어: 이메일 인증 코드 만료 시뮬레이션 (email에 +fail 포함)
     if (body.role === 'REVIEWER' && body.email.includes('+fail')) {
       return HttpResponse.json(
-        { message: 'Email verification code expired or invalid' },
+        {
+          code: 'USER_006',
+          message: 'Email verification code is invalid or expired',
+        },
         { status: 400 }
       );
     }
@@ -37,7 +40,7 @@ export const authResolver: AuthResolver = {
     // 사장님: 사전 설정된 비밀번호 불일치
     if (body.role === 'OWNER' && body.password === 'wrong-owner-secret') {
       return HttpResponse.json(
-        { message: 'Owner password mismatch' },
+        { code: 'AUTH_002', message: 'Invalid credentials' },
         { status: 401 }
       );
     }
@@ -51,7 +54,7 @@ export const authResolver: AuthResolver = {
 
     if (!body.role || !body.mail || !body.password) {
       return HttpResponse.json(
-        { message: 'Required field missing' },
+        { code: 'GEN_004', message: 'Required fields are missing or invalid' },
         { status: 400 }
       );
     }
@@ -62,7 +65,7 @@ export const authResolver: AuthResolver = {
       body.password === 'wrongpassword'
     ) {
       return HttpResponse.json(
-        { message: 'Invalid credentials' },
+        { code: 'AUTH_002', message: 'Invalid credentials' },
         { status: 401 }
       );
     }

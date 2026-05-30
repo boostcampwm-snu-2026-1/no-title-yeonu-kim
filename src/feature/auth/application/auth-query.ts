@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 import { UsecaseContext } from '@/feature/shared/context/usecase-context';
+import { createErrorMessage } from '@/feature/shared/error/create-error-message';
 import { useRouteNavigation } from '@/routes/use-route-navigation';
 import type { UserRole } from '../domain/user-role';
 
@@ -26,12 +27,14 @@ export const useSignIn = ({
     onSuccess: (response) => {
       if (response.type === 'success') {
         toMain();
-      } else {
-        if (response.code === 'AUTH_002' || response.code === 'GEN_004') {
-          setResponseMessage('아이디 또는 비밀번호가 일치하지 않습니다.');
-          return;
-        }
+        return;
       }
+      setResponseMessage(
+        createErrorMessage(
+          response.code,
+          '로그인에 실패했습니다. 다시 시도해 주세요.'
+        )
+      );
     },
   });
 
@@ -67,13 +70,14 @@ export const useSignUp = ({
     onSuccess: (response) => {
       if (response.type === 'success') {
         toMain();
-      } else {
-        if (response.code === 'USER_003') {
-          setResponseMessage('이미 존재하는 이메일입니다.');
-          return;
-        }
-        setResponseMessage('회원가입에 실패했습니다. 다시 시도해주세요.');
+        return;
       }
+      setResponseMessage(
+        createErrorMessage(
+          response.code,
+          '회원가입에 실패했습니다. 다시 시도해 주세요.'
+        )
+      );
     },
   });
 
