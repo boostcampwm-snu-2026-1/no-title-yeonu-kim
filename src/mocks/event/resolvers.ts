@@ -19,10 +19,22 @@ export const eventResolver: EventResolver = {
   createEvent: async ({ request }) => {
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const body = (await request.json()) as EventCreateRequest;
@@ -56,10 +68,22 @@ export const eventResolver: EventResolver = {
   getOwnerEvents: ({ request }) => {
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     return HttpResponse.json({ events: mockEvents });
@@ -69,15 +93,30 @@ export const eventResolver: EventResolver = {
     const { eventId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const event = mockEvents.find((e) => e.id === eventId);
     if (!event) {
-      return HttpResponse.json({ code: 'EVENT_001', message: 'Event not found' }, { status: 404 });
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
     }
 
     const body = (await request.json()) as EventPatchRequest;
@@ -97,15 +136,30 @@ export const eventResolver: EventResolver = {
     const { eventId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const event = mockEvents.find((e) => e.id === eventId);
     if (!event) {
-      return HttpResponse.json({ code: 'EVENT_001', message: 'Event not found' }, { status: 404 });
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
     }
 
     return HttpResponse.json(null, { status: 200 });

@@ -38,15 +38,30 @@ export const applicationResolver: ApplicationResolver = {
     const { eventId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const event = mockEvents.find((e) => e.id === eventId);
     if (!event) {
-      return HttpResponse.json({ code: 'EVENT_001', message: 'Event not found' }, { status: 404 });
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
     }
 
     const url = new URL(request.url);
@@ -75,15 +90,30 @@ export const applicationResolver: ApplicationResolver = {
     const { eventId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'REVIEWER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const event = mockEvents.find((e) => e.id === eventId);
     if (!event) {
-      return HttpResponse.json({ code: 'EVENT_001', message: 'Event not found' }, { status: 404 });
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
     }
 
     // 이미 마감된 이벤트
@@ -96,7 +126,13 @@ export const applicationResolver: ApplicationResolver = {
 
     // 이미 신청한 이벤트 → ALREADY_APPLIED_EVENT_ID 사용
     if (eventId === ALREADY_APPLIED_EVENT_ID) {
-      return HttpResponse.json({ code: 'APPLICATION_003', message: 'You have already applied for this event' }, { status: 409 });
+      return HttpResponse.json(
+        {
+          code: 'APPLICATION_003',
+          message: 'You have already applied for this event',
+        },
+        { status: 409 }
+      );
     }
 
     return HttpResponse.json(null, { status: 200 });
@@ -106,10 +142,22 @@ export const applicationResolver: ApplicationResolver = {
   getMyApplications: ({ request }) => {
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'REVIEWER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     return HttpResponse.json({
@@ -126,7 +174,13 @@ export const applicationResolver: ApplicationResolver = {
     const { applicationId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
 
     const app = mockApplications.find((a) => a.id === applicationId);
@@ -139,7 +193,13 @@ export const applicationResolver: ApplicationResolver = {
 
     // 해당 신청의 신청자가 아닌 경우 시뮬레이션: OWNER가 접근하면 403
     if (role === 'OWNER') {
-      return HttpResponse.json({ code: 'APPLICATION_001', message: 'You are not allowed to access this application' }, { status: 403 });
+      return HttpResponse.json(
+        {
+          code: 'APPLICATION_001',
+          message: 'You are not allowed to access this application',
+        },
+        { status: 403 }
+      );
     }
 
     return HttpResponse.json(null, { status: 200 });
@@ -150,7 +210,13 @@ export const applicationResolver: ApplicationResolver = {
     const { applicationId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
 
     const app = mockApplications.find((a) => a.id === applicationId);
@@ -164,14 +230,23 @@ export const applicationResolver: ApplicationResolver = {
     // 이미 인증을 제출한 신청 → ALREADY_SUBMITTED_APP_ID 사용
     if (applicationId === ALREADY_SUBMITTED_APP_ID) {
       return HttpResponse.json(
-        { code: 'APPLICATION_003', message: 'Review has already been submitted for this application' },
+        {
+          code: 'APPLICATION_003',
+          message: 'Review has already been submitted for this application',
+        },
         { status: 409 }
       );
     }
 
     // 해당 신청의 신청자가 아닌 경우: OWNER가 접근하면 403
     if (role === 'OWNER') {
-      return HttpResponse.json({ code: 'APPLICATION_001', message: 'You are not allowed to access this application' }, { status: 403 });
+      return HttpResponse.json(
+        {
+          code: 'APPLICATION_001',
+          message: 'You are not allowed to access this application',
+        },
+        { status: 403 }
+      );
     }
 
     return HttpResponse.json(null, { status: 200 });
@@ -182,10 +257,22 @@ export const applicationResolver: ApplicationResolver = {
     const { applicationId } = params;
     const role = getRole(request);
     if (!role) {
-      return HttpResponse.json({ code: 'AUTH_001', message: 'Authorization header is missing or malformed' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_001',
+          message: 'Authorization header is missing or malformed',
+        },
+        { status: 401 }
+      );
     }
     if (role !== 'OWNER') {
-      return HttpResponse.json({ code: 'AUTH_007', message: 'You do not have permission to perform this action' }, { status: 401 });
+      return HttpResponse.json(
+        {
+          code: 'AUTH_007',
+          message: 'You do not have permission to perform this action',
+        },
+        { status: 401 }
+      );
     }
 
     const app = mockApplications.find((a) => a.id === applicationId);

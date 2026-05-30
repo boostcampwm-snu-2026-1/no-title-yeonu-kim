@@ -29,7 +29,10 @@ export const authResolver: AuthResolver = {
     // 리뷰어: 이메일 인증 코드 만료 시뮬레이션 (email에 +fail 포함)
     if (body.role === 'REVIEWER' && body.email.includes('+fail')) {
       return HttpResponse.json(
-        { code: 'USER_006', message: 'Email verification code is invalid or expired' },
+        {
+          code: 'USER_006',
+          message: 'Email verification code is invalid or expired',
+        },
         { status: 400 }
       );
     }
