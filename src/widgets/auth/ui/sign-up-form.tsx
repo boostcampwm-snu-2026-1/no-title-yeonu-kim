@@ -1,14 +1,15 @@
-import { Check, Eye, EyeOff, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import {
-  useSendVerificationEmail,
-  useSignUp,
-  useValidateEmailCode,
-} from '@/feature/auth/application/auth-query';
+import { Check, X } from 'lucide-react';
+import { useState } from 'react';
+import { useSignUp } from '@/feature/auth/application/auth-query';
 import type { UserRole } from '@/feature/auth/domain/user-role';
 import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
 import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
+import { PasswordInput } from '@/widgets/auth/ui/password-input';
+import {
+  formatTimer,
+  useEmailVerification,
+} from '@/widgets/auth/ui/use-email-verification';
 import { Button } from '@/widgets/common/ui/button';
 import {
   Card,
@@ -21,56 +22,12 @@ import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 
-const RESEND_COOLDOWN_SEC = 60;
-const CODE_EXPIRY_SEC = 300;
-
-function formatTimer(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 export function SignUpForm() {
   const { toSignIn } = useRouteNavigation();
   const [role, setRole] = useState<UserRole>('REVIEWER');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [responseMessage, setResponseMessage] = useState('');
-  const [codeError, setCodeError] = useState('');
+  const [signUpMessage, setSignUpMessage] = useState('');
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [expirySeconds, setExpirySeconds] = useState(0);
-
-  useEffect(() => {
-    if (resendCooldown <= 0) {
-      return;
-    }
-    const t = setTimeout(() => setResendCooldown((v) => v - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendCooldown]);
-
-  useEffect(() => {
-    if (expirySeconds <= 0) {
-      return;
-    }
-    const t = setTimeout(() => setExpirySeconds((v) => v - 1), 1000);
-    return () => clearTimeout(t);
-  }, [expirySeconds]);
-
-  // 만료 시 코드 입력 섹션 초기화
-  useEffect(() => {
-    if (expirySeconds === 0 && codeSent && !isEmailVerified) {
-      setCodeSent(false);
-      setResponseMessage(
-        '인증 코드가 만료되었습니다. 인증 이메일을 다시 발송해 주세요.'
-      );
-    }
-  // isEmailVerified는 렌더 중에 계산되므로 직접 참조하지 않고 별도 처리
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expirySeconds, codeSent]);
 
   const { inputStates, formStates } = authFormPresenter.useValidator({
     authInputPresenter,
@@ -85,29 +42,24 @@ export function SignUpForm() {
   } = inputStates;
   const isEmailVerified = !formStates.emailVerifySuccessCode.isError;
 
-  const { sendVerificationEmail, isPending: isSendingEmail } =
-    useSendVerificationEmail({
-      onSuccess: () => {
-        setCodeSent(true);
-        setResendCooldown(RESEND_COOLDOWN_SEC);
-        setExpirySeconds(CODE_EXPIRY_SEC);
-        setCodeError('');
-        setResponseMessage('');
-      },
-      setResponseMessage,
-    });
-
-  const { validateEmailCode, isPending: isValidatingCode } =
-    useValidateEmailCode({
-      onSuccess: (verificationToken) => {
-        emailVerifySuccessCode.onChange(verificationToken);
-        setCodeError('');
-      },
-      setCodeError,
-    });
+  const {
+    codeSent,
+    expirySeconds,
+    resendCooldown,
+    codeError,
+    setCodeError,
+    isSendingEmail,
+    isValidatingCode,
+    responseMessage: verificationMessage,
+    sendCode,
+    verifyCode,
+    resetVerification,
+  } = useEmailVerification({
+    onVerified: (token) => emailVerifySuccessCode.onChange(token),
+  });
 
   const { signUp, isPending: isSigningUp } = useSignUp({
-    setResponseMessage,
+    setResponseMessage: setSignUpMessage,
     onDuplicateEmail: () => setShowDuplicateModal(true),
   });
 
@@ -119,7 +71,7 @@ export function SignUpForm() {
       return;
     }
     emailVerifySuccessCode.onChange('');
-    sendVerificationEmail({ email: mail.value });
+    sendCode(mail.value);
   };
 
   const handleVerifyCode = () => {
@@ -127,7 +79,7 @@ export function SignUpForm() {
       setCodeError('6자리 숫자 인증 코드를 입력해 주세요.');
       return;
     }
-    validateEmailCode({ email: mail.value, code: code.value });
+    verifyCode(mail.value, code.value);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -151,6 +103,20 @@ export function SignUpForm() {
 
   const { detailedError } = password;
   const showPasswordRequirements = password.value.length > 0;
+
+  const getSendCodeButtonLabel = (
+    isSendingEmail: boolean,
+    codeSent: boolean,
+    resendCooldown: number
+  ): string => {
+    if (isSendingEmail) {
+      return '발송 중...';
+    }
+    if (!codeSent) {
+      return '인증 코드 발송';
+    }
+    return resendCooldown > 0 ? `재발송 (${resendCooldown}s)` : '재발송';
+  };
 
   return (
     <>
@@ -204,30 +170,28 @@ export function SignUpForm() {
                     value={mail.value}
                     onChange={(e) => {
                       mail.onChange(e.target.value);
-                      setCodeSent(false);
-                      setExpirySeconds(0);
-                      setResendCooldown(0);
                       emailVerifySuccessCode.onChange('');
+                      resetVerification();
                     }}
                     aria-invalid={submitted && mail.isError}
                     autoComplete="email"
                     className="flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSendCode}
-                    disabled={isPending || resendCooldown > 0}
-                    className="shrink-0 px-3 text-xs"
-                  >
-                    {isSendingEmail
-                      ? '발송 중...'
-                      : codeSent
-                        ? resendCooldown > 0
-                          ? `재발송 (${resendCooldown}s)`
-                          : '재발송'
-                        : '인증 코드 발송'}
-                  </Button>
+                  {!isEmailVerified && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSendCode}
+                      disabled={isPending || resendCooldown > 0}
+                      className="shrink-0 px-3 text-xs"
+                    >
+                      {getSendCodeButtonLabel(
+                        isSendingEmail,
+                        codeSent,
+                        resendCooldown
+                      )}
+                    </Button>
+                  )}
                 </div>
                 {submitted && formStates.mail.isError && (
                   <p className="text-destructive text-xs">
@@ -285,32 +249,14 @@ export function SignUpForm() {
               {/* 비밀번호 */}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="signup-password">비밀번호</Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="비밀번호를 입력하세요"
-                    value={password.value}
-                    onChange={(e) => password.onChange(e.target.value)}
-                    aria-invalid={submitted && password.isError}
-                    autoComplete="new-password"
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={
-                      showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="signup-password"
+                  placeholder="비밀번호를 입력하세요"
+                  value={password.value}
+                  onChange={password.onChange}
+                  aria-invalid={submitted && password.isError}
+                  autoComplete="new-password"
+                />
                 {submitted && password.isError && (
                   <p className="text-destructive text-xs">
                     비밀번호 필수 조건을 만족해 주세요.
@@ -357,32 +303,14 @@ export function SignUpForm() {
               {/* 비밀번호 확인 */}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="confirm-password">비밀번호 확인</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="비밀번호를 다시 입력하세요"
-                    value={passwordConfirm.value}
-                    onChange={(e) => passwordConfirm.onChange(e.target.value)}
-                    aria-invalid={submitted && passwordConfirm.isError}
-                    autoComplete="new-password"
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={
-                      showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                    }
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="confirm-password"
+                  placeholder="비밀번호를 다시 입력하세요"
+                  value={passwordConfirm.value}
+                  onChange={passwordConfirm.onChange}
+                  aria-invalid={submitted && passwordConfirm.isError}
+                  autoComplete="new-password"
+                />
                 {submitted && passwordConfirm.isError && (
                   <p className="text-destructive text-xs">
                     비밀번호가 일치하지 않습니다.
@@ -390,9 +318,9 @@ export function SignUpForm() {
                 )}
               </div>
 
-              {responseMessage && (
+              {(verificationMessage || signUpMessage) && (
                 <p className="text-center text-destructive text-sm">
-                  {responseMessage}
+                  {verificationMessage || signUpMessage}
                 </p>
               )}
 
@@ -432,12 +360,7 @@ export function SignUpForm() {
   );
 }
 
-type RequirementItemProps = {
-  label: string;
-  met: boolean;
-};
-
-function RequirementItem({ label, met }: RequirementItemProps) {
+const RequirementItem = ({ label, met }: { label: string; met: boolean }) => {
   return (
     <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
       {met ? (
@@ -448,4 +371,4 @@ function RequirementItem({ label, met }: RequirementItemProps) {
       <span>{label}</span>
     </div>
   );
-}
+};
