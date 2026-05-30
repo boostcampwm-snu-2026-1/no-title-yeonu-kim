@@ -5,9 +5,12 @@ import type {
   SuccessResponse,
 } from '../../domain';
 import type {
+  EmailRequest,
+  EmailValidateRequest,
   SignInRequest,
   SignUpRequest,
   UserWithAccessTokenResponse,
+  VerificationTokenResponse,
 } from './schemas';
 
 type GetApisProps = {
@@ -31,6 +34,24 @@ type Api = (_: {
 
 export const getLocalServerApis = ({ callWithoutToken }: GetApisProps) =>
   ({
+    'POST /api/auth/email': ({ body }: { body: EmailRequest }) =>
+      callWithoutToken<SuccessResponse<null>>({
+        method: 'POST',
+        path: 'api/auth/email',
+        body,
+      }),
+    'POST /api/auth/email/verify': ({ body }: { body: EmailRequest }) =>
+      callWithoutToken<SuccessResponse<null>>({
+        method: 'POST',
+        path: 'api/auth/email/verify',
+        body,
+      }),
+    'POST /api/auth/email/validate': ({ body }: { body: EmailValidateRequest }) =>
+      callWithoutToken<SuccessResponse<VerificationTokenResponse>>({
+        method: 'POST',
+        path: 'api/auth/email/validate',
+        body,
+      }),
     'POST /api/auth/user': ({ body }: { body: SignUpRequest }) =>
       callWithoutToken<SuccessResponse<UserWithAccessTokenResponse>>({
         method: 'POST',

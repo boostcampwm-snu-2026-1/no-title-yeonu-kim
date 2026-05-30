@@ -20,3 +20,16 @@ export type UserWithAccessTokenResponse = {
   user: UserBriefDTO;
   token: string;
 };
+
+export type EmailRequest = {
+  email: string;
+};
+
+export type EmailValidateRequest = {
+  email: string;
+  code: string;
+};
+
+export type VerificationTokenResponse = {
+  verificationToken: string;
+};

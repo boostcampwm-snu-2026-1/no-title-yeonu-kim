@@ -1,6 +1,10 @@
 import { Check, Eye, EyeOff, X } from 'lucide-react';
-import { useState } from 'react';
-import { useSignUp } from '@/feature/auth/application/auth-query';
+import { useEffect, useState } from 'react';
+import {
+  useSendVerificationEmail,
+  useSignUp,
+  useValidateEmailCode,
+} from '@/feature/auth/application/auth-query';
 import type { UserRole } from '@/feature/auth/domain/user-role';
 import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
 import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
@@ -12,9 +16,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/widgets/common/ui/card';
+import { Dialog } from '@/widgets/common/ui/dialog';
 import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
+
+const RESEND_COOLDOWN_SEC = 60;
+const CODE_EXPIRY_SEC = 300;
+
+function formatTimer(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
 export function SignUpForm() {
   const { toSignIn } = useRouteNavigation();
@@ -24,6 +38,39 @@ export function SignUpForm() {
   const [codeSent, setCodeSent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [expirySeconds, setExpirySeconds] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return;
+    }
+    const t = setTimeout(() => setResendCooldown((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (expirySeconds <= 0) {
+      return;
+    }
+    const t = setTimeout(() => setExpirySeconds((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [expirySeconds]);
+
+  // 만료 시 코드 입력 섹션 초기화
+  useEffect(() => {
+    if (expirySeconds === 0 && codeSent && !isEmailVerified) {
+      setCodeSent(false);
+      setResponseMessage(
+        '인증 코드가 만료되었습니다. 인증 이메일을 다시 발송해 주세요.'
+      );
+    }
+  // isEmailVerified는 렌더 중에 계산되므로 직접 참조하지 않고 별도 처리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expirySeconds, codeSent]);
 
   const { inputStates, formStates } = authFormPresenter.useValidator({
     authInputPresenter,
@@ -38,22 +85,49 @@ export function SignUpForm() {
   } = inputStates;
   const isEmailVerified = !formStates.emailVerifySuccessCode.isError;
 
-  const { signUp, isPending } = useSignUp({ setResponseMessage });
+  const { sendVerificationEmail, isPending: isSendingEmail } =
+    useSendVerificationEmail({
+      onSuccess: () => {
+        setCodeSent(true);
+        setResendCooldown(RESEND_COOLDOWN_SEC);
+        setExpirySeconds(CODE_EXPIRY_SEC);
+        setCodeError('');
+        setResponseMessage('');
+      },
+      setResponseMessage,
+    });
+
+  const { validateEmailCode, isPending: isValidatingCode } =
+    useValidateEmailCode({
+      onSuccess: (verificationToken) => {
+        emailVerifySuccessCode.onChange(verificationToken);
+        setCodeError('');
+      },
+      setCodeError,
+    });
+
+  const { signUp, isPending: isSigningUp } = useSignUp({
+    setResponseMessage,
+    onDuplicateEmail: () => setShowDuplicateModal(true),
+  });
+
+  const isPending = isSendingEmail || isValidatingCode || isSigningUp;
 
   const handleSendCode = () => {
     if (formStates.mail.isError) {
       setSubmitted(true);
       return;
     }
-    setCodeSent(true);
-    // TODO: API call to send verification code
+    emailVerifySuccessCode.onChange('');
+    sendVerificationEmail({ email: mail.value });
   };
 
   const handleVerifyCode = () => {
     if (code.isError) {
+      setCodeError('6자리 숫자 인증 코드를 입력해 주세요.');
       return;
     }
-    emailVerifySuccessCode.onChange(code.value);
+    validateEmailCode({ email: mail.value, code: code.value });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,249 +153,282 @@ export function SignUpForm() {
   const showPasswordRequirements = password.value.length > 0;
 
   return (
-    <Card className="w-full max-w-sm shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-center font-semibold text-xl">
-          회원가입
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-5">
-          <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)}>
-            <TabsList className="w-full">
-              <TabsTrigger value="REVIEWER" className="flex-1">
-                손님
-              </TabsTrigger>
-              <TabsTrigger value="OWNER" className="flex-1">
-                사장님
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+    <>
+      <Card className="w-full max-w-sm shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-center font-semibold text-xl">
+            회원가입
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-5">
+            <Tabs value={role} onValueChange={(v) => setRole(v as UserRole)}>
+              <TabsList className="w-full">
+                <TabsTrigger value="REVIEWER" className="flex-1">
+                  손님
+                </TabsTrigger>
+                <TabsTrigger value="OWNER" className="flex-1">
+                  사장님
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {/* 실명 */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="signup-username">실명</Label>
-              <Input
-                id="signup-username"
-                type="text"
-                placeholder="실명을 입력하세요"
-                value={username.value}
-                onChange={(e) => username.onChange(e.target.value)}
-                aria-invalid={submitted && username.isError}
-                autoComplete="name"
-              />
-              {submitted && username.isError && (
-                <p className="text-destructive text-xs">
-                  한글 2~6자 또는 영문 2~20자로 입력해 주세요.
-                </p>
-              )}
-            </div>
-
-            {/* 이메일 + 인증 코드 발송 */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="signup-email">이메일</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="이메일을 입력하세요"
-                  value={mail.value}
-                  onChange={(e) => {
-                    mail.onChange(e.target.value);
-                    setCodeSent(false);
-                    emailVerifySuccessCode.onChange('');
-                  }}
-                  aria-invalid={submitted && mail.isError}
-                  autoComplete="email"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleSendCode}
-                  className="shrink-0 px-3 text-xs"
-                >
-                  {codeSent ? '재발송' : '인증 코드 발송'}
-                </Button>
-              </div>
-              {submitted && formStates.mail.isError && (
-                <p className="text-destructive text-xs">
-                  올바른 이메일을 입력해 주세요.
-                </p>
-              )}
-              {isEmailVerified && (
-                <p className="flex items-center gap-1 text-green-600 text-xs">
-                  <Check className="size-3" />
-                  이메일 인증이 완료되었습니다.
-                </p>
-              )}
-            </div>
-
-            {/* 인증 코드 입력 (발송 후, 미인증 시) */}
-            {codeSent && !isEmailVerified && (
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              {/* 실명 */}
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="verification-code">인증 코드</Label>
+                <Label htmlFor="signup-username">실명</Label>
+                <Input
+                  id="signup-username"
+                  type="text"
+                  placeholder="실명을 입력하세요"
+                  value={username.value}
+                  onChange={(e) => username.onChange(e.target.value)}
+                  aria-invalid={submitted && username.isError}
+                  autoComplete="name"
+                />
+                {submitted && username.isError && (
+                  <p className="text-destructive text-xs">
+                    한글 2~6자 또는 영문 2~20자로 입력해 주세요.
+                  </p>
+                )}
+              </div>
+
+              {/* 이메일 + 인증 코드 발송 */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signup-email">이메일</Label>
                 <div className="flex gap-2">
                   <Input
-                    id="verification-code"
-                    type="text"
-                    placeholder="6자리 숫자를 입력하세요"
-                    value={code.value}
-                    onChange={(e) => code.onChange(e.target.value)}
-                    aria-invalid={submitted && code.isError}
-                    maxLength={6}
+                    id="signup-email"
+                    type="email"
+                    placeholder="이메일을 입력하세요"
+                    value={mail.value}
+                    onChange={(e) => {
+                      mail.onChange(e.target.value);
+                      setCodeSent(false);
+                      setExpirySeconds(0);
+                      setResendCooldown(0);
+                      emailVerifySuccessCode.onChange('');
+                    }}
+                    aria-invalid={submitted && mail.isError}
+                    autoComplete="email"
                     className="flex-1"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleVerifyCode}
+                    onClick={handleSendCode}
+                    disabled={isPending || resendCooldown > 0}
                     className="shrink-0 px-3 text-xs"
                   >
-                    인증 확인
+                    {isSendingEmail
+                      ? '발송 중...'
+                      : codeSent
+                        ? resendCooldown > 0
+                          ? `재발송 (${resendCooldown}s)`
+                          : '재발송'
+                        : '인증 코드 발송'}
                   </Button>
                 </div>
-                {submitted && code.isError && (
+                {submitted && formStates.mail.isError && (
                   <p className="text-destructive text-xs">
-                    6자리 숫자 인증 코드를 입력해 주세요.
+                    올바른 이메일을 입력해 주세요.
+                  </p>
+                )}
+                {isEmailVerified && (
+                  <p className="flex items-center gap-1 text-green-600 text-xs">
+                    <Check className="size-3" />
+                    이메일 인증이 완료되었습니다.
                   </p>
                 )}
               </div>
-            )}
 
-            {/* 비밀번호 */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="signup-password">비밀번호</Label>
-              <div className="relative">
-                <Input
-                  id="signup-password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="비밀번호를 입력하세요"
-                  value={password.value}
-                  onChange={(e) => password.onChange(e.target.value)}
-                  aria-invalid={submitted && password.isError}
-                  autoComplete="new-password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={
-                    showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
+              {/* 인증 코드 입력 (발송 후, 미인증 시) */}
+              {codeSent && !isEmailVerified && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="verification-code">인증 코드</Label>
+                    {expirySeconds > 0 && (
+                      <span className="text-muted-foreground text-xs tabular-nums">
+                        {formatTimer(expirySeconds)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      id="verification-code"
+                      type="text"
+                      placeholder="6자리 숫자를 입력하세요"
+                      value={code.value}
+                      onChange={(e) => {
+                        code.onChange(e.target.value);
+                        setCodeError('');
+                      }}
+                      maxLength={6}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleVerifyCode}
+                      disabled={isPending}
+                      className="shrink-0 px-3 text-xs"
+                    >
+                      {isValidatingCode ? '확인 중...' : '인증 확인'}
+                    </Button>
+                  </div>
+                  {codeError && (
+                    <p className="text-destructive text-xs">{codeError}</p>
                   )}
-                </button>
-              </div>
-              {submitted && password.isError && (
-                <p className="text-destructive text-xs">
-                  비밀번호 필수 조건을 만족해 주세요.
-                </p>
-              )}
-
-              {/* 비밀번호 요구사항 */}
-              {showPasswordRequirements && (
-                <div className="mt-1 flex flex-col gap-2 rounded-lg border bg-muted/40 p-3">
-                  <div className="flex flex-col gap-1">
-                    <p className="mb-0.5 font-medium text-foreground/70 text-xs">
-                      필수 조건
-                    </p>
-                    <RequirementItem
-                      label="8자리 이상, 64자리 이하"
-                      met={!detailedError.lengthError}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <p className="mb-0.5 font-medium text-foreground/70 text-xs">
-                      권고 조건
-                    </p>
-                    <RequirementItem
-                      label="숫자 포함"
-                      met={!detailedError.numberError}
-                    />
-                    <RequirementItem
-                      label="영문 대소문자 포함"
-                      met={!detailedError.englishError}
-                    />
-                    <RequirementItem
-                      label="특수문자 포함"
-                      met={!detailedError.specialCharError}
-                    />
-                    <RequirementItem
-                      label="연속된 문자열이나 숫자 없음"
-                      met={!detailedError.patternError}
-                    />
-                  </div>
                 </div>
               )}
-            </div>
 
-            {/* 비밀번호 확인 */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="confirm-password">비밀번호 확인</Label>
-              <div className="relative">
-                <Input
-                  id="confirm-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="비밀번호를 다시 입력하세요"
-                  value={passwordConfirm.value}
-                  onChange={(e) => passwordConfirm.onChange(e.target.value)}
-                  aria-invalid={submitted && passwordConfirm.isError}
-                  autoComplete="new-password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={
-                    showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
+              {/* 비밀번호 */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signup-password">비밀번호</Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="비밀번호를 입력하세요"
+                    value={password.value}
+                    onChange={(e) => password.onChange(e.target.value)}
+                    aria-invalid={submitted && password.isError}
+                    autoComplete="new-password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={
+                      showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                </div>
+                {submitted && password.isError && (
+                  <p className="text-destructive text-xs">
+                    비밀번호 필수 조건을 만족해 주세요.
+                  </p>
+                )}
+
+                {/* 비밀번호 요구사항 */}
+                {showPasswordRequirements && (
+                  <div className="mt-1 flex flex-col gap-2 rounded-lg border bg-muted/40 p-3">
+                    <div className="flex flex-col gap-1">
+                      <p className="mb-0.5 font-medium text-foreground/70 text-xs">
+                        필수 조건
+                      </p>
+                      <RequirementItem
+                        label="8자리 이상, 64자리 이하"
+                        met={!detailedError.lengthError}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <p className="mb-0.5 font-medium text-foreground/70 text-xs">
+                        권고 조건
+                      </p>
+                      <RequirementItem
+                        label="숫자 포함"
+                        met={!detailedError.numberError}
+                      />
+                      <RequirementItem
+                        label="영문 대소문자 포함"
+                        met={!detailedError.englishError}
+                      />
+                      <RequirementItem
+                        label="특수문자 포함"
+                        met={!detailedError.specialCharError}
+                      />
+                      <RequirementItem
+                        label="연속된 문자열이나 숫자 없음"
+                        met={!detailedError.patternError}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              {submitted && passwordConfirm.isError && (
-                <p className="text-destructive text-xs">
-                  비밀번호가 일치하지 않습니다.
+
+              {/* 비밀번호 확인 */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="confirm-password">비밀번호 확인</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="비밀번호를 다시 입력하세요"
+                    value={passwordConfirm.value}
+                    onChange={(e) => passwordConfirm.onChange(e.target.value)}
+                    aria-invalid={submitted && passwordConfirm.isError}
+                    autoComplete="new-password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={
+                      showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                </div>
+                {submitted && passwordConfirm.isError && (
+                  <p className="text-destructive text-xs">
+                    비밀번호가 일치하지 않습니다.
+                  </p>
+                )}
+              </div>
+
+              {responseMessage && (
+                <p className="text-center text-destructive text-sm">
+                  {responseMessage}
                 </p>
               )}
-            </div>
 
-            {responseMessage && (
-              <p className="text-center text-destructive text-sm">
-                {responseMessage}
-              </p>
-            )}
+              <Button
+                className="mt-1 w-full"
+                disabled={isPending}
+                type="submit"
+              >
+                {isSigningUp ? '가입 중입니다...' : '회원가입'}
+              </Button>
+            </form>
 
-            <Button className="mt-1 w-full" disabled={isPending} type="submit">
-              {isPending ? '가입 중입니다...' : '회원가입'}
-            </Button>
-          </form>
+            <p className="text-center text-muted-foreground text-sm">
+              이미 계정이 있으신가요?{' '}
+              <button
+                type="button"
+                onClick={toSignIn}
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                로그인하기
+              </button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-          <p className="text-center text-muted-foreground text-sm">
-            이미 계정이 있으신가요?{' '}
-            <button
-              type="button"
-              onClick={toSignIn}
-              className="font-medium text-primary underline-offset-4 hover:underline"
-            >
-              로그인하기
-            </button>
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      <Dialog
+        open={showDuplicateModal}
+        title="이미 가입된 이메일입니다"
+        description="입력하신 이메일로 이미 가입된 계정이 존재합니다. 로그인 페이지로 이동하시겠습니까?"
+        confirmLabel="로그인하기"
+        cancelLabel="취소"
+        onConfirm={toSignIn}
+        onCancel={() => setShowDuplicateModal(false)}
+      />
+    </>
   );
 }
 

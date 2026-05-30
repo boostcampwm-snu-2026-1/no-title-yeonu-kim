@@ -31,6 +31,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   DEPOSIT_002: '예치금 정보를 찾을 수 없습니다.',
   // S3
   S3_001: '파일 업로드 URL 생성에 실패했습니다.',
+  // Mail
+  MAIL_001: '이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.',
 };
 
 const FALLBACK_MESSAGE = '오류가 발생했습니다. 다시 시도해 주세요.';
