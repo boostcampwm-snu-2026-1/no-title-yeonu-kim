@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'storybook/internal/preview-api';
+import { useState } from 'react';
 import { useAuthQuery } from '@/feature/auth/application/auth-query';
 import { implAuthUsecase } from '@/feature/auth/usecase/auth-usecase';
 import { QueryContext } from '@/feature/shared/context/query-context';
@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export const App = () => {
+const AppContent = () => {
   const [token, setToken] = useState<string | null>(null);
   const api = implApi({ externalCall });
   const tokenRepository = implTokenRepository({ setToken });
@@ -26,14 +26,20 @@ export const App = () => {
   const authQuery = useAuthQuery({ authUsecase });
 
   return (
+    <QueryContext.Provider value={{ authQuery }}>
+      <TokenContext.Provider value={{ token }}>
+        <UsecaseContext.Provider value={{ authUsecase }}>
+          <RouterProvider />
+        </UsecaseContext.Provider>
+      </TokenContext.Provider>
+    </QueryContext.Provider>
+  );
+};
+
+export const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
-      <QueryContext.Provider value={{ authQuery }}>
-        <TokenContext.Provider value={{ token }}>
-          <UsecaseContext.Provider value={{ authUsecase }}>
-            <RouterProvider />
-          </UsecaseContext.Provider>
-        </TokenContext.Provider>
-      </QueryContext.Provider>
+      <AppContent />
     </QueryClientProvider>
   );
 };
