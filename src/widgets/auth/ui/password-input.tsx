@@ -13,7 +13,7 @@ type PasswordInputProps = {
   className?: string;
 };
 
-export function PasswordInput({
+export const PasswordInput = ({
   id,
   value,
   onChange,
@@ -21,7 +21,7 @@ export function PasswordInput({
   'aria-invalid': ariaInvalid,
   autoComplete,
   className,
-}: PasswordInputProps) {
+}: PasswordInputProps) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -46,4 +46,4 @@ export function PasswordInput({
       </button>
     </div>
   );
-}
+};

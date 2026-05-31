@@ -23,7 +23,7 @@ import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 
-export function SignUpForm() {
+export const SignUpForm = () => {
   const { toSignIn } = useRouteNavigation();
   const [role, setRole] = useState<UserRole>('REVIEWER');
   const [submitted, setSubmitted] = useState(false);
@@ -361,7 +361,7 @@ export function SignUpForm() {
       />
     </>
   );
-}
+};
 
 const RequirementItem = ({ label, met }: { label: string; met: boolean }) => {
   return (

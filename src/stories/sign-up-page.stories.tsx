@@ -7,10 +7,10 @@ const VALID_NAME = '홍길동';
 const VALID_EMAIL = 'test@example.com';
 const VALID_CODE = '123456';
 
-async function completeEmailVerification(
+const completeEmailVerification = async (
   canvas: ReturnType<typeof within>,
   email = VALID_EMAIL
-) {
+) => {
   await userEvent.type(canvas.getByLabelText('이메일'), email);
   await userEvent.click(canvas.getByRole('button', { name: '인증 코드 발송' }));
   const codeInput = await canvas.findByLabelText('인증 코드');
@@ -19,7 +19,7 @@ async function completeEmailVerification(
   await expect(
     canvas.findByText('이메일 인증이 완료되었습니다.')
   ).resolves.toBeInTheDocument();
-}
+};
 
 const meta: Meta<typeof SignUpPage> = {
   title: 'Pages/SignUpPage',
