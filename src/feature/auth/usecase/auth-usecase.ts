@@ -2,6 +2,7 @@ import type { UserRole } from '@/feature/auth/domain/user-role';
 import type { UsecaseResponse } from '@/feature/shared/response';
 import type { Apis } from '@/infrastructure/api';
 import type { VerificationTokenResponse } from '@/infrastructure/api/apis/local-server/schemas';
+import type { TokenStateRepository } from '@/infrastructure/token/token-repository';
 import type { UserWithAccessTokenResponse } from '@/mocks/auth/schemas';
 
 export type AuthUsecase = {
@@ -40,7 +41,13 @@ export type AuthUsecase = {
   }) => UsecaseResponse<UserWithAccessTokenResponse>;
 };
 
-export const implAuthUsecase = ({ api }: { api: Apis }): AuthUsecase => ({
+export const implAuthUsecase = ({
+  api,
+  tokenRepository,
+}: {
+  api: Apis;
+  tokenRepository: TokenStateRepository;
+}): AuthUsecase => ({
   checkEmailDuplicate: async ({ email }) => {
     const { status, data } = await api['POST /api/auth/email']({
       body: { email },
@@ -77,6 +84,7 @@ export const implAuthUsecase = ({ api }: { api: Apis }): AuthUsecase => ({
     });
 
     if (status === 200) {
+      tokenRepository.setToken({ token: data.token });
       return { type: 'success', data: data };
     }
 
@@ -89,6 +97,7 @@ export const implAuthUsecase = ({ api }: { api: Apis }): AuthUsecase => ({
     });
 
     if (status === 200) {
+      tokenRepository.setToken({ token: data.token });
       return {
         type: 'success',
         data,
