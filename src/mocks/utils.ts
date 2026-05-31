@@ -1,6 +1,6 @@
 export type MockRole = 'OWNER' | 'REVIEWER' | null;
 
-export function getRole(request: Request): MockRole {
+export const getRole = (request: Request): MockRole => {
   const auth = request.headers.get('Authorization');
   if (auth === 'Bearer mock-owner-token') {
     return 'OWNER';
@@ -9,7 +9,7 @@ export function getRole(request: Request): MockRole {
     return 'REVIEWER';
   }
   return null;
-}
+};
 
 // 특수 케이스 트리거 값
 export const CLOSED_EVENT_ID = 'closed-event-001';

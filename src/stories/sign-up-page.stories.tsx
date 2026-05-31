@@ -7,7 +7,7 @@ const VALID_NAME = '홍길동';
 const VALID_EMAIL = 'test@example.com';
 const VALID_CODE = '123456';
 
-async function completeEmailVerification(
+const completeEmailVerification = async (
   canvas: ReturnType<typeof within>,
   email = VALID_EMAIL
 ) {

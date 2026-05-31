@@ -8,12 +8,12 @@ if (rootElement === null) {
   throw new Error('Root element not found');
 }
 
-async function enableMocking() {
+const enableMocking = async () => {
   if (import.meta.env.DEV) {
     const { worker } = await import('./mocks');
     return worker.start({ onUnhandledRequest: 'bypass' });
   }
-}
+};
 
 enableMocking().then(() => {
   createRoot(rootElement!).render(

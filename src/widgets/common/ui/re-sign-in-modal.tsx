@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import { Button } from './button';
 
-export function ReSignInModal() {
+export const ReSignInModal = () => {
   const { toSignIn } = useRouteNavigation();
 
   return createPortal(
@@ -26,4 +26,4 @@ export function ReSignInModal() {
     </div>,
     document.body
   );
-}
+};

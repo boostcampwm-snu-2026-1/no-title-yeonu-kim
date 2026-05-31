@@ -17,7 +17,7 @@ import { Input } from '@/widgets/common/ui/input';
 import { Label } from '@/widgets/common/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/widgets/common/ui/tabs';
 
-export function SignInForm() {
+export const SignInForm = () => {
   const [role, setRole] = useState<UserRole>('REVIEWER');
   const [submitted, setSubmitted] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
@@ -125,4 +125,4 @@ export function SignInForm() {
       </CardContent>
     </Card>
   );
-}
+};
