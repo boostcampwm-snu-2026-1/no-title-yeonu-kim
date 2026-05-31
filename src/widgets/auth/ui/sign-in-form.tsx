@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useSignIn } from '@/feature/auth/application/auth-query';
 import type { UserRole } from '@/feature/auth/domain/user-role';
 import { authFormPresenter } from '@/feature/auth/presenter/auth-form-presenter';
 import { authInputPresenter } from '@/feature/auth/presenter/auth-input-presenter';
+import { QueryContext } from '@/feature/shared/context/query-context';
+import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import { PasswordInput } from '@/widgets/auth/ui/password-input';
 import { Button } from '@/widgets/common/ui/button';
@@ -28,6 +29,8 @@ export function SignInForm() {
   });
   const { mail, password } = inputStates;
 
+  const { authQuery } = useGuardContext(QueryContext);
+  const { useSignIn } = authQuery;
   const { signIn, isPending } = useSignIn({ setResponseMessage });
 
   const handleSubmit = (e: React.FormEvent) => {

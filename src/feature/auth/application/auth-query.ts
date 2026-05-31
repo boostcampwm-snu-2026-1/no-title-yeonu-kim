@@ -165,5 +165,21 @@ export const useAuthQuery = ({ authUsecase }: { authUsecase: AuthUsecase }) => {
         reissueToken,
       };
     },
+    useLogout: () => {
+      const { mutate: logout } = useMutation({
+        mutationFn: async ({ token }: { token: string }) => {
+          return await authUsecase.logout({ token });
+        },
+        onSuccess: async () => {
+          await queryClient.invalidateQueries();
+          toMain();
+        },
+        onError: () => {
+          return;
+        },
+      });
+
+      return { logout };
+    },
   };
 };
