@@ -1,7 +1,10 @@
 import type { UserRole } from '@/feature/auth/domain/user-role';
 import type { UsecaseResponse } from '@/feature/shared/response';
 import type { Apis } from '@/infrastructure/api';
-import type { VerificationTokenResponse } from '@/infrastructure/api/apis/local-server/schemas';
+import type {
+  TokenResponse,
+  VerificationTokenResponse,
+} from '@/infrastructure/api/apis/local-server/schemas';
 import type { TokenStateRepository } from '@/infrastructure/token/token-repository';
 import type { UserWithAccessTokenResponse } from '@/mocks/auth/schemas';
 
@@ -39,6 +42,8 @@ export type AuthUsecase = {
     mail: string;
     password: string;
   }) => UsecaseResponse<UserWithAccessTokenResponse>;
+  reissueAccessToken: () => UsecaseResponse<TokenResponse>;
+  logout: ({ token }: { token: string }) => UsecaseResponse<void>;
 };
 
 export const implAuthUsecase = ({
@@ -98,6 +103,32 @@ export const implAuthUsecase = ({
 
     if (status === 200) {
       tokenRepository.setToken({ token: data.token });
+      return {
+        type: 'success',
+        data,
+      };
+    }
+    return { type: 'error', code: data.code, message: data.message };
+  },
+
+  reissueAccessToken: async () => {
+    const { status, data } = await api['GET /api/auth/token']();
+    if (status === 200) {
+      const accessToken = data.accessToken;
+      tokenRepository.setToken({ token: accessToken });
+      return { type: 'success', data };
+    }
+    return { type: 'error', code: data.code, message: data.message };
+  },
+
+  logout: async ({ token }) => {
+    const { status, data } = await api['DELETE /api/auth/user/session']({
+      token,
+    });
+
+    tokenRepository.removeToken();
+
+    if (status === 200) {
       return {
         type: 'success',
         data,

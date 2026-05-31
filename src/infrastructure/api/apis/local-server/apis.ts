@@ -9,6 +9,7 @@ import type {
   EmailValidateRequest,
   SignInRequest,
   SignUpRequest,
+  TokenResponse,
   UserWithAccessTokenResponse,
   VerificationTokenResponse,
 } from './schemas';
@@ -32,7 +33,10 @@ type Api = (_: {
   query: never;
 }) => Promise<{ status: number; data: unknown }>;
 
-export const getLocalServerApis = ({ callWithoutToken }: GetApisProps) =>
+export const getLocalServerApis = ({
+  callWithoutToken,
+  callWithToken,
+}: GetApisProps) =>
   ({
     'POST /api/auth/email': ({ body }: { body: EmailRequest }) =>
       callWithoutToken<SuccessResponse<null>>({
@@ -67,5 +71,17 @@ export const getLocalServerApis = ({ callWithoutToken }: GetApisProps) =>
         method: 'POST',
         path: 'api/auth/user/session',
         body,
+      }),
+
+    'GET /api/auth/token': () =>
+      callWithoutToken<SuccessResponse<TokenResponse>>({
+        method: 'GET',
+        path: 'api/auth/token',
+      }),
+    'DELETE /api/auth/user/session': ({ token }: { token: string }) =>
+      callWithToken<SuccessResponse<void>>({
+        method: 'DELETE',
+        path: 'api/auth/user/session',
+        token,
       }),
   }) satisfies Record<string, Api>;

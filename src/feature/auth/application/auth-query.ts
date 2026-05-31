@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createErrorMessage } from '@/feature/shared/error/create-error-message';
 import { useRouteNavigation } from '@/feature/shared/routes/use-route-navigation';
 import type { UserRole } from '../domain/user-role';
@@ -8,6 +8,7 @@ export type AuthQuery = ReturnType<typeof useAuthQuery>;
 
 export const useAuthQuery = ({ authUsecase }: { authUsecase: AuthUsecase }) => {
   const { toMain } = useRouteNavigation();
+  const queryClient = useQueryClient();
 
   return {
     useSendVerificationEmail: ({
@@ -145,6 +146,24 @@ export const useAuthQuery = ({ authUsecase }: { authUsecase: AuthUsecase }) => {
       });
 
       return { signUp, isPending };
+    },
+    useRefreshToken: () => {
+      const { mutate: reissueToken } = useMutation({
+        mutationFn: async () => {
+          const response = await authUsecase.reissueAccessToken();
+          return response;
+        },
+        onSuccess: async () => {
+          await queryClient.invalidateQueries();
+        },
+        onError: () => {
+          return;
+        },
+      });
+
+      return {
+        reissueToken,
+      };
     },
   };
 };
