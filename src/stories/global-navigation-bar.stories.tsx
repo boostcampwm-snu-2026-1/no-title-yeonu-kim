@@ -116,7 +116,9 @@ export const LogoutFlow: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    const logoutButton = await canvas.findByRole('button', { name: '로그아웃' });
+    const logoutButton = await canvas.findByRole('button', {
+      name: '로그아웃',
+    });
     await userEvent.click(logoutButton);
 
     await expect(
