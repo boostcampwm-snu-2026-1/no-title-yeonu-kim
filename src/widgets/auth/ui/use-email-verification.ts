@@ -1,8 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
-import {
-  useSendVerificationEmail,
-  useValidateEmailCode,
-} from '../../../feature/auth/application/auth-query';
+import { QueryContext } from '@/feature/shared/context/query-context';
+import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 
 const RESEND_COOLDOWN_SEC = 30;
 const CODE_EXPIRY_SEC = 300;
@@ -78,6 +76,9 @@ export const useEmailVerification = ({
 }) => {
   const [state, dispatch] = useReducer(emailVerificationReducer, initialState);
   const [codeError, setCodeError] = useState('');
+
+  const { authQuery } = useGuardContext(QueryContext);
+  const { useSendVerificationEmail, useValidateEmailCode } = authQuery;
 
   useEffect(() => {
     if (state.resendCooldown <= 0) {

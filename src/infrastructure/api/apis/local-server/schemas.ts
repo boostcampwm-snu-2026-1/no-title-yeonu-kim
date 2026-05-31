@@ -33,3 +33,7 @@ export type EmailValidateRequest = {
 export type VerificationTokenResponse = {
   verificationToken: string;
 };
+
+export type TokenResponse = {
+  accessToken: string;
+};
