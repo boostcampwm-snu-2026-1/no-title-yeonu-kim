@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import type { Preview } from '@storybook/react-vite';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { initialize, mswLoader } from 'msw-storybook-addon';
@@ -14,7 +15,10 @@ import { implTokenRepository } from '../src/infrastructure/token/token-repositor
 import { handlers } from '../src/mocks/handlers';
 import '../src/index.css';
 
-initialize({ onUnhandledRequest: 'bypass' });
+initialize({
+  onUnhandledRequest: 'bypass',
+  serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+});
 
 /**
  * QueryClientProvider 안에서 렌더되는 내부 컴포넌트.

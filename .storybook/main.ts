@@ -11,8 +11,9 @@ const config: StorybookConfig = {
   addons: ['msw-storybook-addon'],
   framework: { name: '@storybook/react-vite', options: {} },
   staticDirs: ['../public'],
-  viteFinal: (viteConfig) =>
+  viteFinal: (viteConfig, { configType }) =>
     mergeConfig(viteConfig, {
+      base: configType === 'PRODUCTION' ? '/no-title-yeonu-kim/' : '/',
       plugins: [tailwindcss()],
       resolve: { alias: { '@': path.resolve(dir, '../src') } },
     }),
