@@ -4,15 +4,28 @@ import type {
   ResponseNecessary,
   SuccessResponse,
 } from '../../domain';
+import { encodeQueryParams } from './encode-query-params';
 import type {
   EmailRequest,
   EmailValidateRequest,
   SignInRequest,
   SignUpRequest,
+  StoreEventListResponse,
+  StoreListWithEventsResponse,
+  StoreType,
   TokenResponse,
   UserWithAccessTokenResponse,
   VerificationTokenResponse,
 } from './schemas';
+
+type StoreListQuery = {
+  category?: StoreType;
+  name?: string;
+  page?: string;
+  size?: string;
+};
+
+type StoreIdQuery = { storeId: string };
 
 type GetApisProps = {
   callWithToken: <R extends ResponseNecessary>(
@@ -83,5 +96,18 @@ export const getLocalServerApis = ({
         method: 'DELETE',
         path: 'api/auth/user/session',
         token,
+      }),
+    'GET /api/store': ({ query }: { query?: StoreListQuery }) => {
+      const qs =
+        query !== undefined ? encodeQueryParams({ params: query }) : '';
+      return callWithoutToken<SuccessResponse<StoreListWithEventsResponse>>({
+        method: 'GET',
+        path: qs ? `api/store?${qs}` : 'api/store',
+      });
+    },
+    'GET /api/store/:storeId/events': ({ query }: { query: StoreIdQuery }) =>
+      callWithoutToken<SuccessResponse<StoreEventListResponse>>({
+        method: 'GET',
+        path: `api/store/${query.storeId}/events`,
       }),
   }) satisfies Record<string, Api>;

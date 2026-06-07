@@ -1,13 +1,7 @@
-import { useRouteNavigation } from '../feature/shared/routes/use-route-navigation';
+import { StoreSearch } from '@/widgets/landing/ui/store-search';
 
-export const LandingPage = () => {
-  const { toSignIn, toSignUp } = useRouteNavigation();
-
-  return (
-    <div>
-      <p>랜딩 페이지입니다.</p>
-      <button onClick={toSignIn}>로그인</button>
-      <button onClick={toSignUp}>회원가입</button>
-    </div>
-  );
-};
+export const LandingPage = () => (
+  <div className="mx-auto max-w-xl px-4 py-6">
+    <StoreSearch />
+  </div>
+);

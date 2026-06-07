@@ -1,3 +1,36 @@
+export type StoreType = 'RESTAURANT' | 'CAFE' | 'FASHION' | 'BEAUTY' | 'ETC';
+
+type EventBriefDTO = {
+  id: string;
+  title: string;
+  condition: string;
+  reward: number;
+  isActive: boolean;
+};
+
+export type StoreWithEventsResponse = {
+  id: string;
+  name: string;
+  address: string;
+  category: StoreType;
+  thumbnailKey?: string;
+  description?: string;
+  events: EventBriefDTO[];
+  totalEventCount: number;
+};
+
+export type StoreListWithEventsResponse = {
+  stores: StoreWithEventsResponse[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  hasNext: boolean;
+};
+
+export type StoreEventListResponse = {
+  events: EventBriefDTO[];
+};
+
 type UserBriefDTO = {
   id: string;
   userRole: 'OWNER' | 'REVIEWER';
