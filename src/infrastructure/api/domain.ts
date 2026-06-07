@@ -28,9 +28,23 @@ export type ExternalCallParams = {
   credentials?: string;
 };
 
+export type ExternalFileCallParams = {
+  method: string;
+  path: string;
+  body?: Record<string, unknown> | File;
+  headers?: Record<string, string>;
+};
+
 export type InternalCallParams = {
   method: string;
   path: string;
   body?: Record<string, unknown>;
   token?: string;
+};
+
+export type InternalFileCallParams = {
+  method: string;
+  path: string;
+  contentType?: string;
+  body?: Record<string, unknown> | File;
 };

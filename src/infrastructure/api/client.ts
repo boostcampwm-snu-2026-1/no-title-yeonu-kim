@@ -1,13 +1,23 @@
 import { getLocalServerApis } from './apis/local-server';
+import { getStorageServerApis } from './apis/storage-server';
 import type {
   ErrorResponse,
   ExternalCallParams,
+  ExternalFileCallParams,
   InternalCallParams,
+  InternalFileCallParams,
   ResponseNecessary,
 } from './domain';
 
 type ImplApiProps = {
   externalCall(_: ExternalCallParams): Promise<ResponseNecessary>;
+};
+
+type ImplStorageApiProps = {
+  externalStorageCall(
+    _: ExternalFileCallParams,
+    returnFile: boolean
+  ): Promise<ResponseNecessary>;
 };
 
 export const implApi = ({ externalCall }: ImplApiProps) => {
@@ -52,4 +62,41 @@ export const implApi = ({ externalCall }: ImplApiProps) => {
   });
 };
 
+export const implStorageApi = ({
+  externalStorageCall,
+}: ImplStorageApiProps) => {
+  const internalFileCall = async <R extends ResponseNecessary>(
+    content: {
+      method: string;
+      path: string;
+      contentType?: string;
+      body?: Record<string, unknown> | File;
+    },
+    returnFile: boolean = false
+  ) => {
+    const response = await externalStorageCall(
+      {
+        method: content.method,
+        path: content.path,
+        body: content.body,
+        headers: {
+          ...(content.contentType !== undefined
+            ? { 'Content-Type': content.contentType }
+            : {}),
+        },
+      },
+      returnFile
+    );
+
+    return response as R;
+  };
+  const callWithFile = <R extends ResponseNecessary>(
+    p: InternalFileCallParams,
+    returnFile: boolean = false
+  ) => internalFileCall<R | ErrorResponse>(p, returnFile);
+
+  return getStorageServerApis({ callWithFile });
+};
+
 export type Apis = ReturnType<typeof getLocalServerApis>;
+export type StorageApis = ReturnType<typeof getStorageServerApis>;

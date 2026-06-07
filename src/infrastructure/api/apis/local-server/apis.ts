@@ -4,12 +4,17 @@ import type {
   ResponseNecessary,
   SuccessResponse,
 } from '../../domain';
-import { encodeQueryParams } from './encode-query-params';
+import { encodeQueryParams } from '../encode-query-params';
 import type {
+  ApplicationCreateRequest,
   EmailRequest,
   EmailValidateRequest,
+  EventDetailResponse,
+  S3UploadRequest,
+  S3UploadResponse,
   SignInRequest,
   SignUpRequest,
+  StoreDetailResponse,
   StoreEventListResponse,
   StoreListWithEventsResponse,
   StoreType,
@@ -109,5 +114,41 @@ export const getLocalServerApis = ({
       callWithoutToken<SuccessResponse<StoreEventListResponse>>({
         method: 'GET',
         path: `api/store/${query.storeId}/events`,
+      }),
+    'GET /api/store/:storeId': ({ query }: { query: StoreIdQuery }) =>
+      callWithoutToken<SuccessResponse<StoreDetailResponse>>({
+        method: 'GET',
+        path: `api/store/${query.storeId}`,
+      }),
+    'GET /api/event/:eventId': ({ query }: { query: { eventId: string } }) =>
+      callWithoutToken<SuccessResponse<EventDetailResponse>>({
+        method: 'GET',
+        path: `api/event/${query.eventId}`,
+      }),
+    'POST /api/s3': ({
+      token,
+      body,
+    }: {
+      token: string;
+      body: S3UploadRequest;
+    }) =>
+      callWithToken<SuccessResponse<S3UploadResponse>>({
+        method: 'POST',
+        path: 'api/s3',
+        body,
+        token,
+      }),
+    'POST /api/applications': ({
+      token,
+      body,
+    }: {
+      token: string;
+      body: ApplicationCreateRequest;
+    }) =>
+      callWithToken<SuccessResponse<null>>({
+        method: 'POST',
+        path: 'api/applications',
+        body,
+        token,
       }),
   }) satisfies Record<string, Api>;
