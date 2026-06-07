@@ -7,6 +7,7 @@ import type { EventCreateRequest, EventPatchRequest } from './schemas';
 type EventResolver = {
   createEvent: HttpResponseResolver<never, EventCreateRequest, never>;
   getOwnerEvents: HttpResponseResolver<never, never, never>;
+  getEvent: HttpResponseResolver<{ eventId: string }, never, never>;
   patchEvent: HttpResponseResolver<
     { eventId: string },
     EventPatchRequest,
@@ -87,6 +88,18 @@ export const eventResolver: EventResolver = {
     }
 
     return HttpResponse.json({ events: mockEvents });
+  },
+
+  getEvent: ({ params }) => {
+    const { eventId } = params;
+    const event = mockEvents.find((e) => e.id === eventId);
+    if (!event) {
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
+    }
+    return HttpResponse.json(event);
   },
 
   patchEvent: async ({ request, params }) => {

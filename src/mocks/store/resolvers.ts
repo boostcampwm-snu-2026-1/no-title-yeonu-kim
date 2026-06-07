@@ -16,6 +16,7 @@ const toStoreResponse = (store: (typeof mockStores)[0]): StoreResponse => {
 type StoreResolver = {
   createStore: HttpResponseResolver<never, StoreCreateRequest, never>;
   getStores: HttpResponseResolver<never, never, never>;
+  getStore: HttpResponseResolver<{ storeId: string }, never, never>;
   patchStore: HttpResponseResolver<
     { storeId: string },
     StorePatchRequest,
@@ -79,6 +80,22 @@ export const storeResolver: StoreResolver = {
       currentPage: page,
       totalPages: Math.ceil(filtered.length / size) || 1,
       hasNext: (page + 1) * size < filtered.length,
+    });
+  },
+
+  getStore: ({ params }) => {
+    const { storeId } = params;
+    const store = mockStores.find((s) => s.id === storeId);
+    if (!store) {
+      return HttpResponse.json(
+        { code: 'STORE_001', message: 'Store not found' },
+        { status: 404 }
+      );
+    }
+    return HttpResponse.json({
+      id: store.id,
+      name: store.name,
+      address: store.address,
     });
   },
 

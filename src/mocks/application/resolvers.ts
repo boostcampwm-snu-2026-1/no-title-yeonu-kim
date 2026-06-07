@@ -7,11 +7,17 @@ import {
 } from '../utils';
 import { mockApplicationSummaries, mockApplications } from './data';
 import type {
+  ApplicationCreateRequest,
   ApplicationStatusRequest,
   ApplicationSubmissionRequest,
 } from './schemas';
 
 type ApplicationResolver = {
+  submitApplication: HttpResponseResolver<
+    never,
+    ApplicationCreateRequest,
+    never
+  >;
   getEventApplications: HttpResponseResolver<{ eventId: string }, never, never>;
   applyEvent: HttpResponseResolver<{ eventId: string }, never, never>;
   getMyApplications: HttpResponseResolver<never, never, never>;
@@ -32,7 +38,43 @@ type ApplicationResolver = {
   >;
 };
 
+const ETHEREUM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
+
 export const applicationResolver: ApplicationResolver = {
+  // POST /applications - 리뷰어가 이벤트 신청 + 인증 사진 한 번에 제출
+  submitApplication: async ({ request }) => {
+    const body = (await request.json()) as ApplicationCreateRequest;
+    if (!body.eventId || !body.walletAddress || !body.imageKey) {
+      return HttpResponse.json(
+        { code: 'GEN_004', message: 'Required fields are missing' },
+        { status: 400 }
+      );
+    }
+
+    if (!ETHEREUM_ADDRESS_REGEX.test(body.walletAddress)) {
+      return HttpResponse.json(
+        { code: 'GEN_005', message: 'Invalid wallet address format' },
+        { status: 400 }
+      );
+    }
+
+    const event = mockEvents.find((e) => e.id === body.eventId);
+    if (!event) {
+      return HttpResponse.json(
+        { code: 'EVENT_001', message: 'Event not found' },
+        { status: 404 }
+      );
+    }
+    if (!event.isActive) {
+      return HttpResponse.json(
+        { code: 'GEN_003', message: 'Event is already closed' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json(null, { status: 200 });
+  },
+
   // GET /event/:eventId/applications - 사장님이 이벤트별 신청 목록 조회
   getEventApplications: ({ request, params }) => {
     const { eventId } = params;

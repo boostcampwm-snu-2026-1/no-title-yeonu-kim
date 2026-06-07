@@ -6,6 +6,7 @@ import { LandingPage } from '../../../pages/landing';
 import { MyPage } from '../../../pages/my-page';
 import { SignInPage } from '../../../pages/sign-in';
 import { SignUpPage } from '../../../pages/sign-up';
+import { SubmitPage } from '../../../pages/submit';
 import { PATH } from './path';
 
 export const RouterProvider = () => {
@@ -15,6 +16,7 @@ export const RouterProvider = () => {
       <Routes>
         <Route path={PATH.SIGN_IN} element={<SignInPage />} />
         <Route path={PATH.SIGN_UP} element={<SignUpPage />} />
+        <Route path={PATH.SUBMIT} element={<SubmitPage />} />
         <Route element={<ReissueToken />}>
           <Route path={PATH.LANDING} element={<LandingPage />} />
           <Route element={<ProtectedRoute role="SIGN_IN" />}>
