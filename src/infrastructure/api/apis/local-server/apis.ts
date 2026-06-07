@@ -146,7 +146,13 @@ export const getLocalServerApis = ({
       }),
 
     // Event
-    'POST /api/event': ({ body, token }: { body: EventCreateRequest; token: string }) =>
+    'POST /api/event': ({
+      body,
+      token,
+    }: {
+      body: EventCreateRequest;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<EventResponse>>({
         method: 'POST',
         path: 'api/event',
@@ -159,7 +165,13 @@ export const getLocalServerApis = ({
         path: 'api/event/owner',
         token,
       }),
-    'DELETE /api/event/:eventId': ({ query, token }: { query: EventIdQuery; token: string }) =>
+    'DELETE /api/event/:eventId': ({
+      query,
+      token,
+    }: {
+      query: EventIdQuery;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<void>>({
         method: 'DELETE',
         path: `api/event/${query.eventId}`,
@@ -173,23 +185,38 @@ export const getLocalServerApis = ({
       token: string;
     }) => {
       const { eventId, ...rest } = query;
-      const qs = Object.keys(rest).length > 0 ? encodeQueryParams({ params: rest }) : '';
+      const qs =
+        Object.keys(rest).length > 0 ? encodeQueryParams({ params: rest }) : '';
       return callWithToken<SuccessResponse<ApplicationSummaryListResponse>>({
         method: 'GET',
-        path: qs ? `api/event/${eventId}/applications?${qs}` : `api/event/${eventId}/applications`,
+        path: qs
+          ? `api/event/${eventId}/applications?${qs}`
+          : `api/event/${eventId}/applications`,
         token,
       });
     },
 
     // Store
-    'POST /api/store': ({ body, token }: { body: StoreCreateRequest; token: string }) =>
+    'POST /api/store': ({
+      body,
+      token,
+    }: {
+      body: StoreCreateRequest;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<StoreCreateResponse>>({
         method: 'POST',
         path: 'api/store',
         body,
         token,
       }),
-    'DELETE /api/store/:storeId': ({ query, token }: { query: StoreIdQuery; token: string }) =>
+    'DELETE /api/store/:storeId': ({
+      query,
+      token,
+    }: {
+      query: StoreIdQuery;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<void>>({
         method: 'DELETE',
         path: `api/store/${query.storeId}`,
@@ -232,7 +259,13 @@ export const getLocalServerApis = ({
       }),
 
     // Auth - password
-    'PATCH /api/auth/password': ({ body, token }: { body: ChangePasswordRequest; token: string }) =>
+    'PATCH /api/auth/password': ({
+      body,
+      token,
+    }: {
+      body: ChangePasswordRequest;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<void>>({
         method: 'PATCH',
         path: 'api/auth/password',
@@ -247,7 +280,13 @@ export const getLocalServerApis = ({
       }),
 
     // Deposit
-    'POST /api/deposit': ({ body, token }: { body: DepositRequest; token: string }) =>
+    'POST /api/deposit': ({
+      body,
+      token,
+    }: {
+      body: DepositRequest;
+      token: string;
+    }) =>
       callWithToken<SuccessResponse<DepositResponse>>({
         method: 'POST',
         path: 'api/deposit',
