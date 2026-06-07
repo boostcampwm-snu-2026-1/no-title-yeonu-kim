@@ -10,6 +10,8 @@ import { implAuthUsecase } from '../src/feature/auth/usecase/auth-usecase';
 import { QueryContext } from '../src/feature/shared/context/query-context';
 import { TokenContext } from '../src/feature/shared/context/token-context';
 import { UsecaseContext } from '../src/feature/shared/context/usecase-context';
+import { useStoreQuery } from '../src/feature/store/application/store-query';
+import { implStoreUsecase } from '../src/feature/store/usecase/store-usecase';
 import { externalCall, implApi } from '../src/infrastructure/api';
 import { implTokenRepository } from '../src/infrastructure/token/token-repository';
 import { handlers } from '../src/mocks/handlers';
@@ -30,9 +32,11 @@ const StoryAuthProviders = ({ children }: { children: ReactNode }) => {
   const tokenRepository = implTokenRepository({ setToken });
   const authUsecase = implAuthUsecase({ api, tokenRepository });
   const authQuery = useAuthQuery({ authUsecase });
+  const storeUsecase = implStoreUsecase({ api });
+  const storeQuery = useStoreQuery({ storeUsecase });
 
   return (
-    <QueryContext.Provider value={{ authQuery }}>
+    <QueryContext.Provider value={{ authQuery, storeQuery }}>
       <TokenContext.Provider value={{ token }}>
         <UsecaseContext.Provider value={{ authUsecase }}>
           {children}
