@@ -6,7 +6,6 @@ import type { StorageApis } from '@/infrastructure/api/client';
 
 export type FileUsecase = {
   getUploadPresignedUrl(params: {
-    token: string;
     fileName: string;
     fileType: FileType;
   }): UsecaseResponse<S3UploadResponse>;
@@ -23,9 +22,8 @@ export const implFileUsecase = ({
   api: Apis;
   storageApi: StorageApis;
 }): FileUsecase => ({
-  getUploadPresignedUrl: async ({ token, fileName, fileType }) => {
+  getUploadPresignedUrl: async ({ fileName, fileType }) => {
     const { status, data } = await api['POST /api/s3']({
-      token,
       body: { fileName, fileType },
     });
     if (status === 200) {

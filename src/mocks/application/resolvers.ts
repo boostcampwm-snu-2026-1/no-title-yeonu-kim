@@ -43,26 +43,6 @@ const ETHEREUM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 export const applicationResolver: ApplicationResolver = {
   // POST /applications - 리뷰어가 이벤트 신청 + 인증 사진 한 번에 제출
   submitApplication: async ({ request }) => {
-    const role = getRole(request);
-    if (!role) {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_001',
-          message: 'Authorization header is missing or malformed',
-        },
-        { status: 401 }
-      );
-    }
-    if (role !== 'REVIEWER') {
-      return HttpResponse.json(
-        {
-          code: 'AUTH_007',
-          message: 'You do not have permission to perform this action',
-        },
-        { status: 401 }
-      );
-    }
-
     const body = (await request.json()) as ApplicationCreateRequest;
     if (!body.eventId || !body.walletAddress || !body.imageKey) {
       return HttpResponse.json(

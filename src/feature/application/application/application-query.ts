@@ -51,18 +51,15 @@ export const useApplicationQuery = ({
     }) => {
       const { mutate: submitApplication, isPending } = useMutation({
         mutationFn: async ({
-          token,
           eventId,
           walletAddress,
           imageFile,
         }: {
-          token: string;
           eventId: string;
           walletAddress: string;
           imageFile: File;
         }) => {
           return await applicationUsecase.submitApplication({
-            token,
             eventId,
             walletAddress,
             imageFile,

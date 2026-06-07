@@ -16,13 +16,11 @@ export const RouterProvider = () => {
       <Routes>
         <Route path={PATH.SIGN_IN} element={<SignInPage />} />
         <Route path={PATH.SIGN_UP} element={<SignUpPage />} />
+        <Route path={PATH.SUBMIT} element={<SubmitPage />} />
         <Route element={<ReissueToken />}>
           <Route path={PATH.LANDING} element={<LandingPage />} />
           <Route element={<ProtectedRoute role="SIGN_IN" />}>
             <Route path={'/test'} element={<MyPage />} />
-          </Route>
-          <Route element={<ProtectedRoute role="REVIEWER" />}>
-            <Route path={PATH.SUBMIT} element={<SubmitPage />} />
           </Route>
         </Route>
       </Routes>

@@ -125,30 +125,16 @@ export const getLocalServerApis = ({
         method: 'GET',
         path: `api/event/${query.eventId}`,
       }),
-    'POST /api/s3': ({
-      token,
-      body,
-    }: {
-      token: string;
-      body: S3UploadRequest;
-    }) =>
-      callWithToken<SuccessResponse<S3UploadResponse>>({
+    'POST /api/s3': ({ body }: { body: S3UploadRequest }) =>
+      callWithoutToken<SuccessResponse<S3UploadResponse>>({
         method: 'POST',
         path: 'api/s3',
         body,
-        token,
       }),
-    'POST /api/applications': ({
-      token,
-      body,
-    }: {
-      token: string;
-      body: ApplicationCreateRequest;
-    }) =>
-      callWithToken<SuccessResponse<null>>({
+    'POST /api/applications': ({ body }: { body: ApplicationCreateRequest }) =>
+      callWithoutToken<SuccessResponse<null>>({
         method: 'POST',
         path: 'api/applications',
         body,
-        token,
       }),
   }) satisfies Record<string, Api>;

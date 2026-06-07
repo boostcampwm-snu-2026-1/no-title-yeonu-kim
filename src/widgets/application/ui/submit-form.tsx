@@ -4,7 +4,6 @@ import { useParams } from 'react-router';
 import { applicationFormPresenter } from '@/feature/application/presenter/application-form-presenter';
 import { applicationInputPresenter } from '@/feature/application/presenter/application-input-presenter';
 import { QueryContext } from '@/feature/shared/context/query-context';
-import { TokenContext } from '@/feature/shared/context/token-context';
 import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 import { Button } from '@/widgets/common/ui/button';
 import {
@@ -33,7 +32,6 @@ export const SubmitForm = () => {
   }>();
 
   const { applicationQuery } = useGuardContext(QueryContext);
-  const { token } = useGuardContext(TokenContext);
 
   const { store } = applicationQuery.useGetStore({ storeId: storeId ?? '' });
   const { event } = applicationQuery.useGetEvent({ eventId: eventId ?? '' });
@@ -42,7 +40,7 @@ export const SubmitForm = () => {
     applicationInputPresenter,
   });
 
-  const [walletMode, setWalletMode] = useState<'manual' | 'metamask'>('manual');
+  const [metaMaskConnected, setMetaMaskConnected] = useState(false);
   const [metaMaskError, setMetaMaskError] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -74,7 +72,7 @@ export const SubmitForm = () => {
       const address = accounts[0];
       if (address !== undefined) {
         inputStates.walletAddress.onChange(address);
-        setWalletMode('metamask');
+        setMetaMaskConnected(true);
       }
     } catch {
       setMetaMaskError('MetaMask 연결에 실패했습니다.');
@@ -83,7 +81,15 @@ export const SubmitForm = () => {
 
   const handleDisconnectMetaMask = () => {
     inputStates.walletAddress.onChange('');
-    setWalletMode('manual');
+    setMetaMaskConnected(false);
+    setMetaMaskError('');
+  };
+
+  const handleManualAddressChange = (value: string) => {
+    if (metaMaskConnected) {
+      setMetaMaskConnected(false);
+    }
+    inputStates.walletAddress.onChange(value);
     setMetaMaskError('');
   };
 
@@ -116,18 +122,18 @@ export const SubmitForm = () => {
   };
 
   const handleSubmit = () => {
-    if (token === null || storeId === undefined || eventId === undefined) {
+    if (storeId === undefined || eventId === undefined) {
       return;
     }
     if (formStates.walletAddress.isError || formStates.imageFile.isError) {
       return;
     }
     if (inputStates.imageFile.value === null) {
+      setResponseMessage('인증 사진을 업로드해 주세요.');
       return;
     }
 
     submitApplication({
-      token,
       eventId,
       walletAddress: inputStates.walletAddress.value,
       imageFile: inputStates.imageFile.value,
@@ -191,19 +197,8 @@ export const SubmitForm = () => {
       <div className="space-y-3">
         <Label className="font-medium text-sm">지갑 주소</Label>
 
-        {walletMode === 'manual' ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              void handleMetaMaskConnect();
-            }}
-          >
-            <Wallet className="mr-2 size-4" />
-            MetaMask 연결
-          </Button>
-        ) : (
+        {/* MetaMask 연결 */}
+        {metaMaskConnected ? (
           <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2 text-sm">
             <Wallet className="size-4 shrink-0 text-primary" />
             <span className="flex-1 truncate font-mono text-xs">
@@ -217,29 +212,48 @@ export const SubmitForm = () => {
               <X className="size-3.5" />
             </button>
           </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              void handleMetaMaskConnect();
+            }}
+          >
+            <Wallet className="mr-2 size-4" />
+            MetaMask 연결
+          </Button>
         )}
 
         {metaMaskError.length > 0 && (
           <p className="text-destructive text-xs">{metaMaskError}</p>
         )}
 
-        {walletMode === 'manual' && (
-          <div className="space-y-1">
-            <Input
-              placeholder="0x..."
-              value={inputStates.walletAddress.value}
-              onChange={(e) => {
-                inputStates.walletAddress.onChange(e.target.value);
-              }}
-            />
-            {inputStates.walletAddress.value.length > 0 &&
-              formStates.walletAddress.isError && (
-                <p className="text-destructive text-xs">
-                  올바른 이더리움 주소를 입력해 주세요 (0x 시작, 42자)
-                </p>
-              )}
-          </div>
-        )}
+        {/* 구분선 */}
+        <div className="flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-muted-foreground text-xs">또는</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* 직접 입력 */}
+        <div className="space-y-1">
+          <Input
+            placeholder="지갑 주소 직접 입력 (0x...)"
+            value={metaMaskConnected ? '' : inputStates.walletAddress.value}
+            onChange={(e) => {
+              handleManualAddressChange(e.target.value);
+            }}
+          />
+          {!metaMaskConnected &&
+            inputStates.walletAddress.value.length > 0 &&
+            formStates.walletAddress.isError && (
+              <p className="text-destructive text-xs">
+                올바른 이더리움 주소를 입력해 주세요 (0x 시작, 42자)
+              </p>
+            )}
+        </div>
       </div>
 
       {/* 인증 사진 업로드 */}

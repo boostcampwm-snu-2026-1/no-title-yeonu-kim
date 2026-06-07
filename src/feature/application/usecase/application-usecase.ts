@@ -10,7 +10,6 @@ export type ApplicationUsecase = {
   getStore(params: { storeId: string }): UsecaseResponse<StoreDetailResponse>;
   getEvent(params: { eventId: string }): UsecaseResponse<EventDetailResponse>;
   submitApplication(params: {
-    token: string;
     eventId: string;
     walletAddress: string;
     imageFile: File;
@@ -46,9 +45,8 @@ export const implApplicationUsecase = ({
     return { type: 'error', code: err.code, message: err.message };
   },
 
-  submitApplication: async ({ token, eventId, walletAddress, imageFile }) => {
+  submitApplication: async ({ eventId, walletAddress, imageFile }) => {
     const presignedResp = await fileUsecase.getUploadPresignedUrl({
-      token,
       fileName: imageFile.name,
       fileType: 'REVIEW',
     });
@@ -65,7 +63,6 @@ export const implApplicationUsecase = ({
     }
 
     const { status, data } = await api['POST /api/applications']({
-      token,
       body: { eventId, walletAddress, imageKey: presignedResp.data.s3Key },
     });
     if (status === 200) {
