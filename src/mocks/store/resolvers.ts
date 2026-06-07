@@ -59,12 +59,18 @@ export const storeResolver: StoreResolver = {
   getStores: ({ request }) => {
     const url = new URL(request.url);
     const category = url.searchParams.get('category');
+    const name = url.searchParams.get('name');
     const page = Number(url.searchParams.get('page') ?? '0');
     const size = Number(url.searchParams.get('size') ?? '10');
 
-    const filtered = category
+    let filtered = category
       ? mockStores.filter((s) => s.category === category)
       : mockStores;
+
+    if (name) {
+      const q = name.toLowerCase();
+      filtered = filtered.filter((s) => s.name.toLowerCase().includes(q));
+    }
     const paginated = filtered.slice(page * size, (page + 1) * size);
 
     return HttpResponse.json({
