@@ -155,7 +155,11 @@ export const StoreSearch = () => {
       <Button
         className="w-full"
         disabled={storeId === null || eventId === null}
-        onClick={toSubmit}
+        onClick={() => {
+          if (storeId !== null && eventId !== null) {
+            toSubmit({ storeId, eventId });
+          }
+        }}
       >
         다음 단계
       </Button>

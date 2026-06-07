@@ -6,6 +6,7 @@ import type { S3UploadRequest } from './schemas';
 
 type S3Resolver = {
   getPresignedUrl: HttpResponseResolver<never, S3UploadRequest, never>;
+  uploadFile: HttpResponseResolver<never, never, never>;
 };
 
 export const s3Resolver: S3Resolver = {
@@ -33,5 +34,9 @@ export const s3Resolver: S3Resolver = {
       url: `${MOCK_S3_BASE_URL}/${body.fileType}/${body.fileName}`,
       s3Key: `/${body.fileType}/mock/${body.fileName}`,
     });
+  },
+
+  uploadFile: () => {
+    return new HttpResponse(null, { status: 200 });
   },
 };

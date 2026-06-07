@@ -3,6 +3,7 @@ import { http } from 'msw';
 import { applicationResolver } from './resolvers';
 
 export const applicationHandlers = [
+  http.post('*/api/applications', applicationResolver.submitApplication),
   http.get(
     '*/api/event/:eventId/applications',
     applicationResolver.getEventApplications

@@ -56,3 +56,9 @@ export type ApplicationStatusRequest = {
   status: 'approved' | 'rejected';
   reason?: string;
 };
+
+export type ApplicationCreateRequest = {
+  eventId: string;
+  walletAddress: string;
+  imageKey: string;
+};

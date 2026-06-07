@@ -70,3 +70,35 @@ export type VerificationTokenResponse = {
 export type TokenResponse = {
   accessToken: string;
 };
+
+export type StoreDetailResponse = {
+  id: string;
+  name: string;
+  address: string;
+};
+
+export type EventDetailResponse = {
+  id: string;
+  title: string;
+  condition: string;
+  reward: number;
+  isActive: boolean;
+};
+
+export type S3FileType = 'REVIEW' | 'STORE';
+
+export type S3UploadRequest = {
+  fileName: string;
+  fileType: S3FileType;
+};
+
+export type S3UploadResponse = {
+  url: string;
+  s3Key: string;
+};
+
+export type ApplicationCreateRequest = {
+  eventId: string;
+  walletAddress: string;
+  imageKey: string;
+};
