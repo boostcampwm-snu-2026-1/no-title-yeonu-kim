@@ -9,7 +9,7 @@ if (rootElement === null) {
 }
 
 const enableMocking = async () => {
-  if (import.meta.env.DEV) {
+  if (import.meta.env.VITE_USE_MOCK === 'true') {
     const { worker } = await import('./mocks');
     return worker.start({ onUnhandledRequest: 'bypass' });
   }
