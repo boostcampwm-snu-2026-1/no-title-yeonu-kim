@@ -5,7 +5,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     react(),
@@ -16,4 +16,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-});
+  server:
+    mode !== 'mock'
+      ? {
+          proxy: {
+            '/api': 'http://localhost:8000',
+          },
+        }
+      : undefined,
+}));
