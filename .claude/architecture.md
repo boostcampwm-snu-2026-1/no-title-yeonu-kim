@@ -149,6 +149,17 @@ Presenter 사용 패턴:
 5. 모든 엔드포인트 함수는 getLocalServerApis 반환 객체에 추가하며,
    satisfies Record<string, Api> 제약을 통과해야 한다.
 
+#### 현재 등록된 엔드포인트 (변경 시 이 문서도 업데이트)
+  POST /api/auth/email                — 이메일 인증 코드 발송 (body: EmailRequest)
+  POST /api/auth/email/verify         — 이메일 인증 코드 재발송 (body: EmailRequest)
+  POST /api/auth/email/validate       — 이메일 인증 코드 검증 (body: EmailValidateRequest) → VerificationTokenResponse
+  POST /api/auth/user                 — 회원가입 (body: SignUpRequest) → UserWithAccessTokenResponse
+  POST /api/auth/user/session         — 로그인 (body: SignInRequest) → UserWithAccessTokenResponse
+  GET  /api/auth/token                — 액세스 토큰 재발급 → TokenResponse
+  DELETE /api/auth/user/session       — 로그아웃 (token 필수)
+  GET  /api/store                     — 스토어 목록 (query?: { category?, name?, page?, size? }) → StoreListWithEventsResponse
+  GET  /api/store/:storeId/events     — 스토어 이벤트 목록 (query: { storeId }) → StoreEventListResponse
+
 #### encodeQueryParams 동작
 파일: src/infrastructure/api/apis/local-server/encode-query-params.ts
   - undefined / null 값은 자동으로 제외된다.
@@ -170,29 +181,34 @@ Presenter 사용 패턴:
 파일 경로: src/feature/shared/context/
 
 구조:
-  - query-context.ts   : { authQuery, ... } — application 훅 묶음
-  - usecase-context.ts : { authUsecase, ... } — usecase 인스턴스
+  - query-context.ts   : { authQuery, storeQuery } — application 훅 묶음
+  - usecase-context.ts : { authUsecase } — usecase 인스턴스
   - token-context.ts   : { token } — 현재 인증 토큰
+  - review-context.ts  : { storeId, eventId, setStore, setEvent } — 리뷰 작성 흐름의 선택 상태
   - use-gaurd-context.ts : useGuardContext<T> — null-safe 컨텍스트 접근 훅
 
-DI 조립 위치: src/App.tsx (AppContent 컴포넌트)
+현재 DI 조립 (src/App.tsx AppContent):
   const api = implApi({ externalCall });
   const tokenRepository = implTokenRepository({ setToken });
   const authUsecase = implAuthUsecase({ api, tokenRepository });
   const authQuery = useAuthQuery({ authUsecase });
+  const storeUsecase = implStoreUsecase({ api });
+  const storeQuery = useStoreQuery({ storeUsecase });
 
   return (
-    <QueryContext.Provider value={{ authQuery }}>
+    <QueryContext.Provider value={{ authQuery, storeQuery }}>
       <TokenContext.Provider value={{ token }}>
         <UsecaseContext.Provider value={{ authUsecase }}>
-          ...
+          <ReviewContext.Provider value={{ storeId, eventId, setStore, setEvent }}>
+            <RouterProvider />
+          </ReviewContext.Provider>
         </UsecaseContext.Provider>
       </TokenContext.Provider>
     </QueryContext.Provider>
   );
 
 규칙:
-  - 새 도메인의 usecase/query를 추가하면 App.tsx의 Provider에 값을 추가한다.
+  - 새 도메인의 usecase/query를 추가하면 App.tsx의 Provider에 값을 추가하고 이 문서도 업데이트한다.
   - widget에서 Context에 직접 접근할 때는 항상 useGuardContext를 사용한다.
 
 ---
@@ -201,13 +217,12 @@ DI 조립 위치: src/App.tsx (AppContent 컴포넌트)
 파일 경로: src/feature/shared/routes/path.ts
 역할: 앱 내 모든 URL 경로를 상수로 정의한다. 문자열 리터럴을 코드 곳곳에 직접 쓰지 않는다.
 
-패턴:
-  export const PATH = {
-    LANDING: '/',
-    SIGN_IN: '/sign-in',
-    MY_PAGE: '/my-page',
-    // 새 페이지 추가 시 여기에 항목 추가
-  };
+현재 등록된 PATH (변경 시 이 문서도 업데이트):
+  LANDING          : '/'
+  SIGN_IN          : '/sign-in'
+  SIGN_UP          : '/sign-up'
+  SIGN_UP_COMPLETE : '/sign-up-complete'
+  SUBMIT           : '/submit'
 
 규칙:
   - 새 페이지를 만들면 PATH에 항목을 먼저 추가한다.
@@ -221,18 +236,14 @@ DI 조립 위치: src/App.tsx (AppContent 컴포넌트)
   - react-router의 useNavigate를 래핑하여 이름 있는 내비게이션 함수를 제공한다.
   - 컴포넌트와 application 레이어 모두에서 사용 가능하다.
 
-패턴:
-  export const useRouteNavigation = () => {
-    const navigate = useNavigate();
-
-    return {
-      toMain: () => { void navigate(PATH.LANDING); },
-      toSignIn: () => { void navigate(PATH.SIGN_IN); },
-      toMyPage: () => { void navigate(PATH.MY_PAGE); },
-      toBack: () => { void navigate(-1); },
-      refreshPage: () => { void navigate(0); },
-    };
-  };
+현재 등록된 함수 (변경 시 이 문서도 업데이트):
+  toMain           → PATH.LANDING
+  toSignIn         → PATH.SIGN_IN
+  toSignUp         → PATH.SIGN_UP
+  toSignUpComplete → PATH.SIGN_UP_COMPLETE
+  toSubmit         → PATH.SUBMIT
+  toBack           → navigate(-1)
+  refreshPage      → navigate(0)
 
 사용 위치:
   - widget: 버튼 클릭 등 UI 이벤트에서 직접 호출
@@ -258,24 +269,19 @@ DI 조립 위치: src/App.tsx (AppContent 컴포넌트)
   - 모든 페이지 컴포넌트를 PATH 상수와 연결하여 라우트를 등록한다.
   - 공통 레이아웃(GNB 등)과 인증 가드를 중첩 라우트로 조합한다.
 
-현재 구조:
+현재 등록된 라우트 (변경 시 이 문서도 업데이트):
   <Routes>
     {/* 인증 불필요 */}
     <Route path={PATH.SIGN_IN} element={<SignInPage />} />
     <Route path={PATH.SIGN_UP} element={<SignUpPage />} />
 
-    {/* 토큰 재발급 시도 후 진입 (ReissueToken: 마운트 시 토큰 없으면 reissue 시도) */}
+    {/* 토큰 재발급 시도 후 진입 */}
     <Route element={<ReissueToken />}>
       <Route path={PATH.LANDING} element={<LandingPage />} />
 
       {/* 로그인 필수 */}
       <Route element={<ProtectedRoute role="SIGN_IN" />}>
-        <Route path={PATH.MY_PAGE} element={<MyPage />} />
-      </Route>
-
-      {/* 특정 역할 필수 (예: OWNER만 접근) */}
-      <Route element={<ProtectedRoute role="OWNER" />}>
-        <Route path={PATH.OWNER_ONLY} element={<OwnerPage />} />
+        <Route path="/test" element={<MyPage />} />
       </Route>
     </Route>
   </Routes>
