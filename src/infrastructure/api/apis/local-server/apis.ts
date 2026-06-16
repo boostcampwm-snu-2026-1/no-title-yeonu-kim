@@ -138,11 +138,18 @@ export const getLocalServerApis = ({
         path: 'api/s3',
         body,
       }),
-    'POST /api/applications': ({ body }: { body: ApplicationCreateRequest }) =>
-      callWithoutToken<SuccessResponse<null>>({
+    'POST /api/applications': ({
+      body,
+      token,
+    }: {
+      body: ApplicationCreateRequest;
+      token: string;
+    }) =>
+      callWithToken<SuccessResponse<null>>({
         method: 'POST',
         path: 'api/applications',
         body,
+        token,
       }),
 
     // Event

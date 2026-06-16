@@ -54,15 +54,18 @@ export const useApplicationQuery = ({
           eventId,
           walletAddress,
           imageFile,
+          token,
         }: {
           eventId: string;
           walletAddress: string;
           imageFile: File;
+          token: string;
         }) => {
           return await applicationUsecase.submitApplication({
             eventId,
             walletAddress,
             imageFile,
+            token,
           });
         },
         onSuccess: (response) => {

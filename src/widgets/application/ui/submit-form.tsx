@@ -4,6 +4,7 @@ import { useParams } from 'react-router';
 import { applicationFormPresenter } from '@/feature/application/presenter/application-form-presenter';
 import { applicationInputPresenter } from '@/feature/application/presenter/application-input-presenter';
 import { QueryContext } from '@/feature/shared/context/query-context';
+import { TokenContext } from '@/feature/shared/context/token-context';
 import { useGuardContext } from '@/feature/shared/context/use-gaurd-context';
 import { Button } from '@/widgets/common/ui/button';
 import {
@@ -32,6 +33,7 @@ export const SubmitForm = () => {
   }>();
 
   const { applicationQuery } = useGuardContext(QueryContext);
+  const { token } = useGuardContext(TokenContext);
 
   const { store } = applicationQuery.useGetStore({ storeId: storeId ?? '' });
   const { event } = applicationQuery.useGetEvent({ eventId: eventId ?? '' });
@@ -133,10 +135,16 @@ export const SubmitForm = () => {
       return;
     }
 
+    if (token === null) {
+      setResponseMessage('로그인이 필요합니다.');
+      return;
+    }
+
     submitApplication({
       eventId,
       walletAddress: inputStates.walletAddress.value,
       imageFile: inputStates.imageFile.value,
+      token,
     });
   };
 

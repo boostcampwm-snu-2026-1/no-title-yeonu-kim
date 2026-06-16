@@ -13,6 +13,7 @@ export type ApplicationUsecase = {
     eventId: string;
     walletAddress: string;
     imageFile: File;
+    token: string;
   }): UsecaseResponse<null>;
 };
 
@@ -45,10 +46,11 @@ export const implApplicationUsecase = ({
     return { type: 'error', code: err.code, message: err.message };
   },
 
-  submitApplication: async ({ eventId, walletAddress, imageFile }) => {
+  submitApplication: async ({ eventId, walletAddress, imageFile, token }) => {
     const presignedResp = await fileUsecase.getUploadPresignedUrl({
       fileName: imageFile.name,
       fileType: 'REVIEW',
+      contentType: imageFile.type,
     });
     if (presignedResp.type === 'error') {
       return presignedResp;
@@ -64,6 +66,7 @@ export const implApplicationUsecase = ({
 
     const { status, data } = await api['POST /api/applications']({
       body: { eventId, walletAddress, imageKey: presignedResp.data.s3Key },
+      token,
     });
     if (status === 200) {
       return { type: 'success', data: null };
